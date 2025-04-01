@@ -1,0 +1,33 @@
+{
+  "name": "big-tracker",
+  "version": "1.0.0",
+  "description": "Field Employee Tracking & Training Management",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepare": "husky install",
+    "lint": "eslint . --fix"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Asif-BigScal/big-tracker-demo.git"
+  },
+  "author": "Asif Sk",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Asif-BigScal/big-tracker-demo/issues"
+  },
+  "homepage": "https://github.com/Asif-BigScal/big-tracker-demo#readme",
+  "devDependencies": {
+    "@eslint/js": "^9.23.0",
+    "eslint": "^9.23.0",
+    "globals": "^16.0.0",
+    "husky": "^8.0.3",
+    "lint-staged": "^15.5.0"
+  },
+  "lint-staged": {
+    "*.js": [
+      "eslint --fix"
+    ]
+  }
+}
