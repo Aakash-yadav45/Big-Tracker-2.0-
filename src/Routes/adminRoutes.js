@@ -3,7 +3,7 @@ const { authorize } = require('../Middlewares/authenticate');
 const Employee = require('../Models/Employee');
 
 // Controllers
-const { addEmployee, login, deleteEmployee, logout, getVisits, getVisitDetails } = require('../Controllers/adminControllers');
+const { addEmployee, login, deleteEmployee, logout, getVisits, getVisitDetails, searchEmployee } = require('../Controllers/adminControllers');
 
 // Validations
 const {employeeValidate} = require('../Validations/Admin/addEmployee');
@@ -27,7 +27,7 @@ router.get('/login', async (req, res) => {
         res.render('login');
     } catch (error) {
         console.log("Error rendering login page:", error);
-        res.status(500).send("Somthing went wrong. Please try again later");
+        return res.status(500).send("Somthing went wrong. Please try again later");
     }
 });
 
@@ -55,7 +55,10 @@ router.delete('/deleteEmployee/:id', authorize(["admin"]), deleteEmployee);
 router.get('/getVisits', authorize(["admin"]), getVisits);
 
 // Get visit details
-router.get('/getVisitDetails', authorize(["admin"]), getVisitDetails );
+router.get('/getVisitDetails', authorize(["admin"]), getVisitDetails);
+
+// Search employee using name or username
+router.post('/seachEmployee', authorize(['admin']), searchEmployee);
 
 // Logout
 router.post('/logout', logout);

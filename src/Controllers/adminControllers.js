@@ -49,7 +49,7 @@ const login = async (req, res) => {
         generateToken(user, res);
         req.user = user;
 
-        res.status(200).json({role:user.role});
+        res.status(200).json({ role: user.role });
     } catch (error) {
         console.log("Error in login:- ", error.message);
         return res.status(500).json({ message: "Something went wrong. Please try again later." });
@@ -91,10 +91,8 @@ const getVisits = async (req, res) => {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        // Fetch the visits using the username and populate the 'employeeId' field
-        const tracker = await EmployeeTracking.find({ employeeId: user._id});
+        const tracker = await EmployeeTracking.find({ employeeId: user._id }).sort({ clockInTime: -1 });
 
-        console.log(tracker);
 
         return res.status(200).json(tracker);
     } catch (error) {
@@ -103,7 +101,6 @@ const getVisits = async (req, res) => {
     }
 }
 
-// Get visit Details
 // Get visit details
 const getVisitDetails = async (req, res) => {
     try {
@@ -128,6 +125,20 @@ const getVisitDetails = async (req, res) => {
     }
 };
 
+// Search Employee using username and employee name
+const searchEmployee = async (req, res) => {
+    try {
+        const username = req.body;
+        console.log("username:- ", username);
+        res.status(200).json({ message: "success" });
+
+    } catch (error) {
+        console.log("Error in search Employee:- ", error.message);
+        return res.status(500).json({ message: "Somthing went wrong. Please try again later" });
+    }
+}
+
+
 // Logout
 const logout = async (req, res) => {
     try {
@@ -141,4 +152,4 @@ const logout = async (req, res) => {
     }
 };
 
-module.exports = { addEmployee, login, deleteEmployee, getVisits, getVisitDetails, logout };
+module.exports = { addEmployee, login, deleteEmployee, getVisits, getVisitDetails, searchEmployee, logout };

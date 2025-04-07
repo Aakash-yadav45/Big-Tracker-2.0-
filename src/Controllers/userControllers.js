@@ -35,23 +35,26 @@ const login = async (req, res) => {
 const clockIn = async (req, res) => {
     try {
         const employeeId = req.user._id
-        const tracking = await EmployeeTracking.findOne({ employeeId, clockOutTime: null });
+        const startDay = moment().startOf('day').toDate();
+        const endDay = moment().endOf('day').toDate();
 
-        if (tracking) {
+        const tracker = await EmployeeTracking.findOne({ employeeId, clockOutTime: null,clockInTime:{$gte:startDay,$lte:endDay } });
+
+        if (tracker) {
             return res.status(400).json({ message: "Employee is alrady clocked in." })
         }
 
         const clockInTime = moment().toDate();
         const currentTime = moment(clockInTime).format('hh:mm A');
 
-        const newEmployeeTracking = {
+        const newEmployeetracker = {
             employeeId,
-            clockInTime
+            clockInTime: moment().toDate()
         }
 
-        await EmployeeTracking.create(newEmployeeTracking);
+        await EmployeeTracking.create(newEmployeetracker);
 
-        res.status(200).json({ message: `${currentTime} is your clock-in time for the day.` })
+        res.status(200).json({ message: `${moment(newEmployeetracker.clockInTime).format('hh:mm A') } is your clock-in time for the day.` })
     } catch (error) {
         console.log("Error in redering location page:- ", error.message);
         res.status(500).json({ message: "Somthing went wrong. Please try again later." });
@@ -63,13 +66,16 @@ const getLocation = async (req, res) => {
         const { clockInPlace } = req.body;
         const employeeId = req.user._id;
 
-        const clockIn = await EmployeeTracking.findOne({ employeeId, clockOutTime: null });
+        const startDay = moment().startOf('day').toDate();
+        const endDay = moment().endOf('day').toDate();
 
-        if (!clockIn) {
+        const tracker = await EmployeeTracking.findOne({ employeeId, clockOutTime: null, clockInTime: { $gte: startDay, $lte: endDay } });
+
+        if (!tracker) {
             return res.status(404).json({ message: "Employee not clock-in. Please first clock-in" });
         }
 
-        if (clockIn.clockInPlace) {
+        if (tracker.clockInPlace) {
             return res.status(400).json({ message: "Your clock-in location is already stored" });
         }
 
@@ -94,15 +100,16 @@ const startVisit = async (req, res) => {
         const { doctorName } = req.body;
         const doctorImage = req.file ? req.file.filename : null;
 
-        const clockIn = await EmployeeTracking.findOne({ employeeId: req.user._id, clockOutTime: null });
+        const startDay = moment().startOf('day').toDate();
+        const endDay = moment().endOf('day').toDate();
 
-        console.log("clockIn:- ", clockIn);
+        const tracker = await EmployeeTracking.findOne({ employeeId:req.user._id, clockOutTime: null, clockInTime: { $gte: startDay, $lte: endDay } });
 
-        if (!clockIn) {
+        if (!tracker) {
             return res.status(404).json({ message: "Employee has not clocked in." });
         }
 
-        if (!clockIn.clockInPlace) {
+        if (!tracker.clockInPlace) {
             return res.status(404).json({ message: "clock-in place not found." });
         }
 
@@ -114,20 +121,18 @@ const startVisit = async (req, res) => {
             startLocation: "20.81° N, 72.81° E",
         };
 
-        if (clockIn.visits.length === 0) {
-            clockIn.visits.push(newVisit);
+        if (tracker.visits.length === 0) {
+            tracker.visits.push(newVisit);
         } else {
-            const currentVisit = clockIn.visits.find(visit => visit.visitEndTime === null);
-            console.log("CurrectVisit:- ", currentVisit);
-
+            const currentVisit = tracker.visits.find(visit => visit.visitEndTime === null);
             if (currentVisit) {
                 return res.status(400).json({ message: "Employee is already start visit" })
             } else {
-                clockIn.visits.push(newVisit);
+                tracker.visits.push(newVisit);
             }
         }
 
-        await clockIn.save();
+        await tracker.save();
         res.status(200).json({ message: "Visit start successfully!" });
     } catch (error) {
         console.log("Error in clock-in:- ", error.message);
@@ -138,19 +143,20 @@ const startVisit = async (req, res) => {
 // Start Discussion
 const startDiscussion = async (req, res) => {
     try {
-        const tracking = await EmployeeTracking.findOne({ employeeId: req.user._id, clockOutTime: null });
+        const startDay = moment().startOf('day').toDate();
+        const endDay = moment().endOf('day').toDate();
 
-        console.log("tracking:- ", tracking);
-        if (!tracking) {
+        const tracker = await EmployeeTracking.findOne({ employeeId: req.user._id, clockOutTime: null, clockInTime: { $gte: startDay, $lte: endDay } });
+
+        if (!tracker) {
             return res.status(400).json({ message: "Employee tracker can't start .Please clock in" });
         }
 
-        if (tracking.visits.length === 0) {
+        if (tracker.visits.length === 0) {
             return res.status(400).json({ message: "Employee can't start a discussion without starting a visit." });
         }
 
-        const activeVisit = tracking.visits.find(visit => visit.visitEndTime === null);
-        console.log("activeVisit:- ", activeVisit);
+        const activeVisit = tracker.visits.find(visit => visit.visitEndTime === null);
 
         if (!activeVisit) {
             return res.status(400).json({ message: "The employee is not currently on any visit.." });
@@ -172,7 +178,7 @@ const startDiscussion = async (req, res) => {
             }
         }
 
-        await tracking.save();
+        await tracker.save();
 
         res.status(200).json({ message: "Discussion started successfully!" });
     } catch (error) {
@@ -185,20 +191,22 @@ const startDiscussion = async (req, res) => {
 // Over Discussion
 const overDiscussion = async (req, res) => {
     try {
-        const employeeId = req.user._id
         const audioFile = req.file ? req.file.filename : null;
 
-        const clockIn = await EmployeeTracking.findOne({ employeeId, clockOutTime: null });
+        const startDay = moment().startOf('day').toDate();
+        const endDay = moment().endOf('day').toDate();
 
-        if (!clockIn) {
+        const tracker = await EmployeeTracking.findOne({ employeeId: req.user._id, clockOutTime: null, clockInTime: { $gte: startDay, $lte: endDay } });
+
+        if (!tracker) {
             return res.status(400).json({ message: "Employee tracker can't start .Please clock in" });
         }
 
-        if (clockIn.visits.length === 0) {
+        if (tracker.visits.length === 0) {
             return res.status(400).json({ message: "Employee can't start a discussion without starting a visit." });
         }
 
-        const activeVisit = clockIn.visits.find(visit => visit.visitEndTime === null);
+        const activeVisit = tracker.visits.find(visit => visit.visitEndTime === null);
 
         if (!activeVisit) {
             return res.status(400).json({ message: "The employee is not currently on any visit.." });
@@ -218,7 +226,7 @@ const overDiscussion = async (req, res) => {
         currentDiscussion.audioFile = audioFile;
         currentDiscussion.endTime = moment().toDate();
 
-        await clockIn.save();
+        await tracker.save();
 
         res.status(200).json({ message: "Discussion overed successfully!" });
     } catch (error) {
@@ -231,19 +239,22 @@ const overDiscussion = async (req, res) => {
 // Over Visit
 const overVisit = async (req, res) => {
     try {
-        const employeeId = req.user._id;
         const { notes } = req.body;
-        const clockIn = await EmployeeTracking.findOne({ employeeId, clockOutTime: null });
 
-        if (!clockIn) {
+        const startDay = moment().startOf('day').toDate();
+        const endDay = moment().endOf('day').toDate();
+
+        const tracker = await EmployeeTracking.findOne({ employeeId: req.user._id, clockOutTime: null, clockInTime: { $gte: startDay, $lte: endDay } });
+
+        if (!tracker) {
             return res.status(400).json({ message: "Employee tracker can't start .Please clock in" });
         }
 
-        if (clockIn.visits.length === 0) {
+        if (tracker.visits.length === 0) {
             return res.status(400).json({ message: "Employee can't start a discussion without starting a visit." });
         }
 
-        const activeVisit = clockIn.visits.find(visit => visit.visitEndTime === null);
+        const activeVisit = tracker.visits.find(visit => visit.visitEndTime === null);
 
         if (!activeVisit) {
             return res.status(400).json({ message: "The employee is not currently on any visit.." });
@@ -261,7 +272,7 @@ const overVisit = async (req, res) => {
         activeVisit.endLocation = "21.2049° N, 72.8411° E";
         activeVisit.notes = notes;
 
-        await clockIn.save();
+        await tracker.save();
 
         res.status(200).json({ message: "Visit over successfully!" });
     } catch (error) {
@@ -273,15 +284,17 @@ const overVisit = async (req, res) => {
 // clock-out
 const clockOut = async (req, res) => {
     try {
-        const employeeId = req.user._id;
-        const clockIn = await EmployeeTracking.findOne({ employeeId, clockOutTime: null });
+        const startDay = moment().startOf('day').toDate();
+        const endDay = moment().endOf('day').toDate();
 
-        if (!clockIn) {
+        const tracker = await EmployeeTracking.findOne({ employeeId: req.user._id, clockOutTime: null, clockInTime: { $gte: startDay, $lte: endDay } });
+
+        if (!tracker) {
             return res.status(400).json({ message: "Employee has not clocked in." });
         }
 
-        if (clockIn.visits.length !== 0) {
-            const activeVisit = clockIn.visits.find(visit => visit.visitEndTime === null);
+        if (tracker.visits.length !== 0) {
+            const activeVisit = tracker.visits.find(visit => visit.visitEndTime === null);
 
             if (activeVisit) {
                 const activDescussion = activeVisit.discussions.find(discussion => discussion.endTime === null);
@@ -296,11 +309,11 @@ const clockOut = async (req, res) => {
             }
         }
 
-        clockIn.clockOutTime = moment().toDate();;
+        tracker.clockOutTime = moment().toDate();;
 
-        await clockIn.save();
+        await tracker.save();
 
-        res.status(200).json({ message: `Your clock-out time is ${moment(clockOutTime).format('hh:mm A')} for the day.` });
+        res.status(200).json({ message: `Your clock-out time is ${moment(clockIn.clockOutTime).format('hh:mm A')} for the day.` });
     } catch (error) {
         console.log("Error in clock-out user:", error.message);
         return res.status(500).json({ message: "Something went wrong. Please try again later." });
@@ -320,15 +333,16 @@ const logout = async (req, res) => {
     }
 };
 
+// Sync data 
 const sync = async (req, res) => {
     try {
-        const employeeId = req.user._id;
-
         const startDay = moment().startOf('day').toDate();
         const endDay = moment().endOf('day').toDate();
 
+        console.log(startDay + "\n" + endDay);        
+
         const track = await EmployeeTracking.find({
-            employeeId,
+            employeeId:req.user._id,
             clockInTime: {
                 $gte: startDay,
                 $lte: endDay
