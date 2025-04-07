@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            background-color: #f4f4f4;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            padding: 20px;
+            min-height: 100vh;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar h2 {
+            margin: 0;
+            padding-bottom: 15px;
+            font-size: 22px;
+            font-weight: bold;
+            border-bottom: 2px solid white;
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+            margin-top: 20px;
+            overflow-y: auto;
+            max-height: calc(100vh - 160px);
+            flex-grow: 1;
+        }
+
+        .sidebar ul li {
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            transition: background 0.3s;
+            flex-direction: row;
+        }
+
+        .sidebar ul li:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .sidebar ul li img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+
+        .delete-btn {
+            padding: 5px 8px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            font-weight: bold;
+            background-color: #e74c3c;
+            color: white;
+            font-size: 12px;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            background: white;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #ecf0f1;
+            padding: 15px 20px;
+            border-radius: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .add-btn,
+        .logout-btn {
+            padding: 10px 15px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .add-btn {
+            background-color: #27ae60;
+        }
+
+        .logout-btn {
+            background-color: red;
+        }
+
+        .content {
+            display: flex;
+            gap: 20px;
+            flex: 1;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+
+        #leftBox,
+        #rightBox {
+            flex: 1;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            overflow-y: auto;
+            max-height: calc(100vh - 160px);
+        }
+
+        .visit-date {
+            background-color: #4caf50;
+            color: white;
+            font-weight: bold;
+            padding: 6px 12px;
+            border-radius: 20px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            width: fit-content;
+        }
+
+        .visit-box {
+            background-color: #ffffff;
+            border-left: 4px solid #4caf50;
+            border-radius: 10px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+
+        .visit-name {
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        .visit-time {
+            font-size: 13px;
+            color: #555;
+        }
+
+        .visit-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 100%;
+            margin: 20px auto;
+            overflow: hidden;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #3b82f6, #6366f1);
+            padding: 16px;
+            text-align: center;
+        }
+
+        .profile-pic {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid white;
+        }
+
+        .card-body {
+            padding: 16px;
+        }
+
+        .card-body p {
+            margin: 6px 0;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .session {
+            margin-top: 10px;
+            background: #f9fafb;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .session p {
+            margin: 4px 0;
+            font-size: 13px;
+        }
+
+        audio {
+            width: 100%;
+            margin-top: 6px;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 200px;
+            }
+
+            .header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .btn-group {
+                margin-top: 10px;
+                flex-direction: column;
+            }
+
+            .content {
+                flex-direction: column;
+                height: auto;
+            }
+
+            #leftBox,
+            #rightBox {
+                min-width: 100%;
+                max-height: 50vh;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .visit-card {
+                margin: 10px;
+            }
+
+            .profile-pic {
+                width: 60px;
+                height: 60px;
+            }
+
+            .sidebar {
+                width: 100%;
+                position: relative;
+                min-height: auto;
+            }
+
+            .sidebar ul li {
+                flex-direction: row;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="sidebar">
+        <img src="/Big-Tracker.png" alt="BigTracker Logo"
+            style="width: 50px;height: 50px; border-radius: 50%;display: block;margin: 0 auto 10px;">
+        <h2>BigTracker</h2>
+        <ul>
+            <% users.forEach(user=> { %>
+                <li onclick="selectEmployee('<%= user.username %>', '<%= user.name %>', '<%= user.mobile %>')">
+                    <img src="/Employee.png" alt="User" />
+                    <span>
+                        <%= user.username %>
+                    </span>
+                    <button class="delete-btn"
+                        onclick="event.stopPropagation(); deleteEmployee('<%= user._id %>')">Delete</button>
+                </li>
+                <% }) %>
+        </ul>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <div>
+                <strong>Employee Name:</strong> <span id="employeeName">Select an Employee Name</span> <br>
+                <strong>Mobile Number:</strong> <span id="mobileNumber">91+ xxxxx xxxxx</span> <br>
+                <strong>Visit Name:</strong> <span id="visitName">Select a Visit</span>
+            </div>
+            <div class="btn-group">
+                <button class="add-btn" onclick="window.location.href='/api/admin/register'">Add Employee</button>
+                <button class="logout-btn" onclick="logoutUser()">Logout</button>
+            </div>
+        </div>
+
+        <div class="content">
+            <div id="leftBox">
+                <p>No Data Found</p>
+            </div>
+            <div id="rightBox">
+                <p>Please Select Visit</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+    <script>
+        async function selectEmployee(username, name, mobile) {
+            document.getElementById("employeeName").innerText = name;
+            document.getElementById("mobileNumber").innerText = mobile;
+            
+            const leftBox = document.getElementById("leftBox");
+            leftBox.innerHTML = "<p>Loading visits...</p>";
+            
+            try {
+                const response = await fetch(`/api/admin/getVisits?username=${encodeURIComponent(username)}`);
+                const trackers = await response.json();
+                
+                if (!Array.isArray(trackers) || trackers.length === 0) {
+                    leftBox.innerHTML = "<p>No Visits Available</p>";
+                    return;
+                }
+
+                const groupedVisits = {};
+                trackers.forEach(tracker => {
+                    const clockInPlace = tracker.clockInPlace || "Unknown Place";
+                    const startTime = tracker.clockInTime;
+                    const endTime = tracker.clockOutTime;
+                    const date = startTime ? moment(startTime).format('DD-MMMM-YYYY') : "Unknown Date";
+                    if (!groupedVisits[date]) groupedVisits[date] = [];
+                    
+                    groupedVisits[date].push({
+                        _id: tracker._id,
+                        clockInPlace,
+                        startTime,
+                        endTime
+                    });
+                });
+                
+                let html = "";
+                Object.entries(groupedVisits).forEach(([date, visits]) => {
+                    html += `<div class="visit-date">${date}</div>`;
+                    visits.forEach(visit => {
+                        const startTimeFormatted = moment(visit.startTime).format("hh:mm A");
+                        const endTimeFormatted = moment(visit.endTime).format("hh:mm A");
+                        html += `
+<div class="visit-box" onclick="showVisitInfo('${visit._id}', '${visit.clockInPlace.replace(/'/g, "\\'")}')">
+    <div class="visit-name">Name : ${visit.clockInPlace}</div>
+    <div class="visit-time">Timing : ${startTimeFormatted} – ${endTimeFormatted}</div>
+</div>`;
+
+                        });
+                    });
+                    
+                    leftBox.innerHTML = html;
+                } catch (error) {
+                    leftBox.innerHTML = "<p>Error loading visits</p>";
+                    console.error("Error fetching visits:", error);
+                }
+            }
+            
+            async function showVisitInfo(visitId, clockInPlace) {
+                document.getElementById("visitName").innerText = clockInPlace;
+            const rightBox = document.getElementById("rightBox");
+            rightBox.innerHTML = "<p>Loading visit details...</p>";
+            
+            try {
+                const response = await fetch(`/api/admin/getVisitDetails?visitId=${visitId}`);
+                const visits = await response.json();
+                
+                if (!Array.isArray(visits) || visits.length === 0) {
+                    rightBox.innerHTML = "<p>No visit details available.</p>";
+                    return;
+                }
+                
+                let html = "";
+                visits.forEach((visit, index) => {
+                    const visitStartTime = moment(visit.visitStartTime).format("hh:mm A");
+                    const visitEndTime = moment(visit.visitEndTime).format("hh:mm A");
+                    html += `
+            <div class="visit-card">
+              <div class="card-header">
+                <img src="/${visit.doctorImage}" alt="Doctor" class="profile-pic">
+              </div>
+              <div class="card-body">
+                <p><strong>Doctor Name:</strong> ${visit.doctorName || "N/A"}</p>
+                <p><strong>Visit Timing:</strong> ${visitStartTime} - ${visitEndTime}</p>
+                <p><strong>Start Location:</strong> ${visit.startLocation}</p>
+                <p><strong>End Location:</strong> ${visit.endLocation}</p>
+                <p><strong>Note:</strong> ${visit.notes || "No note"}</p>
+                <hr />
+                <p><strong>Sessions:</strong></p>`;
+
+                    if (Array.isArray(visit.discussions) && visit.discussions.length > 0) {
+                        visit.discussions.forEach((session, i) => {
+                            const startTime = moment(session.startTime).format("hh:mm A");
+                            const visitEndTime = moment(session.endTime).format("hh:mm A");
+
+                            html += `
+                <div class="session">
+                  <p><strong>Session No:</strong> ${i + 1}</p>
+                  <p><strong>Timing:</strong> ${startTime} - ${visitEndTime}</p>
+                  <audio controls>
+                    <source src="/${session.audioFile}" type="audio/mp3">
+                    Your browser does not support the audio element.
+                  </audio>
+                </div>`;
+                        });
+                    } else {
+                        html += `<p>No session data available.</p>`;
+                    }
+
+                    html += `</div></div>`;
+                });
+
+                rightBox.innerHTML = html;
+            } catch (error) {
+                rightBox.innerHTML = "<p>Error loading visit details</p>";
+                console.error("Error fetching visit details:", error);
+            }
+        }
+
+        async function deleteEmployee(employeeId) {
+            if (!confirm("Are you sure you want to delete this employee?")) return;
+
+            try {
+                const response = await fetch(`/api/admin/deleteEmployee/${employeeId}`, {
+                    method: "DELETE",
+                    headers: { "Content-Type": "application/json" }
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    alert(result.message || "Employee deleted successfully!");
+                    location.reload();
+                } else {
+                    alert(result.error || "Failed to delete employee.");
+                }
+            } catch (error) {
+                console.error("Error deleting employee:", error);
+                alert("An error occurred while deleting the employee.");
+            }
+        }
+
+        async function logoutUser() {
+            try {
+                const response = await fetch('/api/admin/logout', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                if (response.ok) {
+                    window.location.href = '/api/admin/login';
+                } else {
+                    alert('Logout failed. Please try again.');
+                }
+            } catch (error) {
+                alert('An error occurred while logging out.');
+            }
+        }
+    </script>
+</body>
+
+</html>
