@@ -6,6 +6,7 @@ const { generateToken } = require('../Middlewares/authenticate');
 const EmployeeTracking = require('../Models/EmployeeTracking');
 const Employee = require('../Models/Employee');
 
+// Login 
 const login = async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -32,6 +33,7 @@ const login = async (req, res) => {
     }
 }
 
+// Clock-in
 const clockIn = async (req, res) => {
     try {
         const employeeId = req.user._id
@@ -61,9 +63,12 @@ const clockIn = async (req, res) => {
     }
 }
 
-const getLocation = async (req, res) => {
+// Get visit location
+const   getLocation = async (req, res) => {
     try {
         const { clockInPlace } = req.body;
+        console.log(clockInPlace);
+        
         const employeeId = req.user._id;
 
         const startDay = moment().startOf('day').toDate();
@@ -79,11 +84,9 @@ const getLocation = async (req, res) => {
             return res.status(400).json({ message: "Your clock-in location is already stored" });
         }
 
-        await EmployeeTracking.updateOne(
-            { employeeId, clockOutTime: null },
-            { $set: { clockInPlace } }
-        );
+        tracker.clockInPlace = clockInPlace
 
+        await tracker.save();
         res.status(200).json({ message: "location submited successfully!" })
     } catch (error) {
         console.log("Error in clock-in:- ", error.message);
@@ -92,7 +95,7 @@ const getLocation = async (req, res) => {
     }
 }
 
-
+// Start visit
 const startVisit = async (req, res) => {
     try {
         console.log(req.body);
@@ -333,33 +336,30 @@ const logout = async (req, res) => {
     }
 };
 
-// Sync data 
-const sync = async (req, res) => {
+
+// Upload audio
+const uploadDiscussionAudio = async(req, res) =>{
     try {
-        const startDay = moment().startOf('day').toDate();
-        const endDay = moment().endOf('day').toDate();
+        // visitId and discussionId are received from the frontend 
+        const visitId = "67f50e16b9a89850ea1214c9";
+        const discussionId = "67f50e25b9a89850ea1214ce";
 
-        console.log(startDay + "\n" + endDay);        
+        const tracker = await EmployeeTracking.findOne({ employeeId: req.user._id });
+        
+        const currVisit = tracker.visits.find(visit => visit._id.toString() === visitId);
+        
+        const currDiscussion = currVisit.discussions.find(discussion => discussion._id.toString() === discussionId);
+        
+        currDiscussion.audioFile = req.file ? req.file.filename : null;
 
-        const track = await EmployeeTracking.find({
-            employeeId:req.user._id,
-            clockInTime: {
-                $gte: startDay,
-                $lte: endDay
-            }
-        });
-
-        console.log(track);
-
-        if (!track) {
-            return res.status(404).json({ message: "No tracking data found for today." });
-        }
-
-        res.status(200).json({ messge: "Data recieved successfully!" });
+        await tracker.save();
+        
+        res.status(200).json({ message: "Audio uploaded successfully" });
     } catch (error) {
-        console.log("Error in Sync data :- ", error.message);
+        console.log("Error in upload audio :- ", error.message);
         return res.status(500).json({ message: "Something went wrong. Please try again later." });
+
     }
 }
 
-module.exports = { login, clockIn, getLocation, startVisit, startDiscussion, overDiscussion, overVisit, sync, clockOut, logout };
+module.exports = { login, clockIn, getLocation, startVisit, startDiscussion, overDiscussion, overVisit, clockOut, uploadDiscussionAudio, logout };

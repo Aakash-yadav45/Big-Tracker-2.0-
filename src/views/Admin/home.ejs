@@ -272,9 +272,14 @@
         <img src="/Big-Tracker.png" alt="BigTracker Logo"
             style="width: 50px;height: 50px; border-radius: 50%;display: block;margin: 0 auto 10px;">
         <h2>BigTracker</h2>
-        <ul>
+        <input type="text" id="searchEmployee" placeholder="Search employee..." oninput="filterEmployees()"
+            style="width: 92%; padding: 8px; margin-top: 15px; border-radius: 5px; border: none; font-size: 14px;" />
+
+        <ul id="employeeList">
             <% users.forEach(user=> { %>
-                <li onclick="selectEmployee('<%= user.username %>', '<%= user.name %>', '<%= user.mobile %>')">
+                <li onclick="selectEmployee('<%= user.username %>', '<%= user.name %>', '<%= user.mobile %>')"
+                    data-name="<%= user.name.toLowerCase() %>" data-username="<%= user.username.toLowerCase() %>"
+                    data-mobile="<%= user.mobile %>">
                     <img src="/Employee.png" alt="User" />
                     <span>
                         <%= user.username %>
@@ -284,6 +289,7 @@
                 </li>
                 <% }) %>
         </ul>
+
     </div>
 
     <div class="main-content">
@@ -295,8 +301,11 @@
             </div>
             <div class="btn-group">
                 <button class="add-btn" onclick="window.location.href='/api/admin/register'">Add Employee</button>
+                <button class="add-btn" style="background-color: #f39c12;"
+                    onclick="window.location.href='/api/admin/disabled-employees'">Disabled Employees</button>
                 <button class="logout-btn" onclick="logoutUser()">Logout</button>
             </div>
+
         </div>
 
         <div class="content">
@@ -314,14 +323,14 @@
         async function selectEmployee(username, name, mobile) {
             document.getElementById("employeeName").innerText = name;
             document.getElementById("mobileNumber").innerText = mobile;
-            
+
             const leftBox = document.getElementById("leftBox");
             leftBox.innerHTML = "<p>Loading visits...</p>";
-            
+
             try {
                 const response = await fetch(`/api/admin/getVisits?username=${encodeURIComponent(username)}`);
                 const trackers = await response.json();
-                
+
                 if (!Array.isArray(trackers) || trackers.length === 0) {
                     leftBox.innerHTML = "<p>No Visits Available</p>";
                     return;
@@ -334,7 +343,7 @@
                     const endTime = tracker.clockOutTime;
                     const date = startTime ? moment(startTime).format('DD-MMMM-YYYY') : "Unknown Date";
                     if (!groupedVisits[date]) groupedVisits[date] = [];
-                    
+
                     groupedVisits[date].push({
                         _id: tracker._id,
                         clockInPlace,
@@ -342,7 +351,7 @@
                         endTime
                     });
                 });
-                
+
                 let html = "";
                 Object.entries(groupedVisits).forEach(([date, visits]) => {
                     html += `<div class="visit-date">${date}</div>`;
@@ -355,30 +364,30 @@
     <div class="visit-time">Timing : ${startTimeFormatted} – ${endTimeFormatted}</div>
 </div>`;
 
-                        });
                     });
-                    
-                    leftBox.innerHTML = html;
-                } catch (error) {
-                    leftBox.innerHTML = "<p>Error loading visits</p>";
-                    console.error("Error fetching visits:", error);
-                }
+                });
+
+                leftBox.innerHTML = html;
+            } catch (error) {
+                leftBox.innerHTML = "<p>Error loading visits</p>";
+                console.error("Error fetching visits:", error);
             }
-            
-            async function showVisitInfo(visitId, clockInPlace) {
-                document.getElementById("visitName").innerText = clockInPlace;
+        }
+
+        async function showVisitInfo(visitId, clockInPlace) {
+            document.getElementById("visitName").innerText = clockInPlace;
             const rightBox = document.getElementById("rightBox");
             rightBox.innerHTML = "<p>Loading visit details...</p>";
-            
+
             try {
                 const response = await fetch(`/api/admin/getVisitDetails?visitId=${visitId}`);
                 const visits = await response.json();
-                
+
                 if (!Array.isArray(visits) || visits.length === 0) {
                     rightBox.innerHTML = "<p>No visit details available.</p>";
                     return;
                 }
-                
+
                 let html = "";
                 visits.forEach((visit, index) => {
                     const visitStartTime = moment(visit.visitStartTime).format("hh:mm A");
@@ -464,6 +473,29 @@
                 alert('An error occurred while logging out.');
             }
         }
+
+        // Search Employee
+        function filterEmployees() {
+            const query = document.getElementById("searchEmployee").value.toLowerCase();
+            const listItems = document.querySelectorAll("#employeeList li");
+
+            listItems.forEach(item => {
+                const name = item.getAttribute("data-name");
+                const username = item.getAttribute("data-username");
+                const mobile = item.getAttribute("data-mobile");
+
+                if (
+                    name.includes(query) ||
+                    username.includes(query) ||
+                    mobile.includes(query)
+                ) {
+                    item.style.display = "flex";
+                } else {
+                    item.style.display = "none";
+                }
+            });
+        }
+
     </script>
 </body>
 

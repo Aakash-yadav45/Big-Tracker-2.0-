@@ -7,7 +7,7 @@ const addEmployee = async (req, res) => {
     try {
         const { name, mobile, email, username, password } = req.body;
 
-        const existsUser = await Employee.findOne({ email });
+        const existsUser = await Employee.findOne({ email,username });
 
         if (existsUser) {
             return res.status(400).json({ message: "Email is already register. Please log in." })
@@ -128,13 +128,38 @@ const getVisitDetails = async (req, res) => {
 // Search Employee using username and employee name
 const searchEmployee = async (req, res) => {
     try {
-        const username = req.body;
-        console.log("username:- ", username);
-        res.status(200).json({ message: "success" });
+        console.log("username:- ", req.body);
+        const search = req.body;
+        
+        const employee = await Employee.find({
+            $or:[
+                { username: search.username },
+                { _id: search.id },
+                { name: search.name },
+                {mobile: search.mobile}
+            ],
+            isDisable: false, role: 'user'
+            });
+
+        console.log(employee);
+        
+        res.status(200).json({ message: "success",employee });
 
     } catch (error) {
         console.log("Error in search Employee:- ", error.message);
         return res.status(500).json({ message: "Somthing went wrong. Please try again later" });
+    }
+}
+
+// Get disabled Employees
+const getDesabledEmployees = async (req, res) => {
+    try {
+        const disabledUsers = await Employee.find({ isDisable: true, role: "user" });
+        console.log(disabledUsers);
+        res.status(200).render('Admin/disabledEmployee', { disabledUsers });
+    } catch (error) {
+        console.log("Error in getDesabledEmployees:- ", error.message);
+        return res.status(500).json({ message: "Something went wrong. Please try again later." });
     }
 }
 
@@ -152,4 +177,4 @@ const logout = async (req, res) => {
     }
 };
 
-module.exports = { addEmployee, login, deleteEmployee, getVisits, getVisitDetails, searchEmployee, logout };
+module.exports = { addEmployee, login, deleteEmployee, getVisits, getVisitDetails, searchEmployee, getDesabledEmployees, logout };

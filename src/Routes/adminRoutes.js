@@ -3,7 +3,7 @@ const { authorize } = require('../Middlewares/authenticate');
 const Employee = require('../Models/Employee');
 
 // Controllers
-const { addEmployee, login, deleteEmployee, logout, getVisits, getVisitDetails, searchEmployee } = require('../Controllers/adminControllers');
+const { addEmployee, login, deleteEmployee, logout, getVisits, getVisitDetails, searchEmployee, getDesabledEmployees } = require('../Controllers/adminControllers');
 
 // Validations
 const {employeeValidate} = require('../Validations/Admin/addEmployee');
@@ -58,7 +58,10 @@ router.get('/getVisits', authorize(["admin"]), getVisits);
 router.get('/getVisitDetails', authorize(["admin"]), getVisitDetails);
 
 // Search employee using name or username
-router.post('/seachEmployee', authorize(['admin']), searchEmployee);
+router.get('/searchEmployee', authorize(['admin']), searchEmployee);
+
+// Show Disabled Employees
+router.get('/disabled-employees', authorize(['admin']), getDesabledEmployees);
 
 // Logout
 router.post('/logout', logout);
