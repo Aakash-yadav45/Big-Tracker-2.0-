@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const { hashPassword } = require('../Utils/passwordUils');
+const { encrypt } = require('../Utils/encript');
 const moment = require('moment');
 
 const empSchema = new mongoose.Schema({
@@ -15,6 +16,10 @@ const empSchema = new mongoose.Schema({
 });
 
 empSchema.pre('save', async function (next) {
+    if (this.isModified('email')) {
+        this.email = encrypt(this.email);
+    }
+
     if (this.isModified('password')) {
         this.password = await hashPassword(this.password);
     }

@@ -11,7 +11,7 @@ const generateToken = (user, res) => {
     const token = jwt.sign(
         { id: user._id, role: user.role },
         SECRET_KEY,
-        { expiresIn: "1d" } // Token expires in 1 hour
+        { expiresIn: "1d" } // Token expires in 1 day
     );
 
     // Set the cookie
@@ -19,7 +19,7 @@ const generateToken = (user, res) => {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production", // Secure in production
         sameSite: "strict",
-        maxAge: 86400000 // 1 hour expiration in milliseconds
+        maxAge: 86400000 // 1 day expiration in milliseconds
     });
 
     return token;

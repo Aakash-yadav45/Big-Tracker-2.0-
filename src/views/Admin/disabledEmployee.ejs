@@ -93,26 +93,25 @@
             </li>
             <% }) %>
     </ul>
-
+</body>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         function enableEmployee(id) {
-            fetch(`/api/admin/enableEmployee/${id}`, {
+            $.ajax({
+                url: `/api/admin/enableEmployee/${id}`,
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            }).then(res => {
-                if (res.ok) {
+                contentType: 'application/json',
+                success: function (response) {
                     alert('Employee enabled successfully');
                     location.reload();
-                } else {
+                },
+                error: function (xhr, status, error) {
+                    console.error("Enable error:", error);
                     alert('Failed to enable employee');
                 }
-            }).catch(error => {
-                console.error("Enable error:", error);
-                alert("Something went wrong");
             });
         }
+
 
         function selectEmployee(username, name, mobile) {
             alert(`Selected: ${name} (${username}) - ${mobile}`);
@@ -139,7 +138,5 @@
             });
         }
     </script>
-
-</body>
 
 </html>

@@ -11,8 +11,6 @@ const { login, clockIn, clockOut, startVisit, startDiscussion, overDiscussion, l
 const loginValidate = require('../Validations/login');
 const { getLocationValidate, startVisitValidate, overVisitValidate } = require('../Validations/Employee/EmployeeValidate');
 
-// =============== POST Methods ========================
-
 // Login Employee
 router.post('/login', validate(loginValidate), login);
 
@@ -23,7 +21,7 @@ router.post('/clock-in', authorize(["user"]), clockIn);
 router.post('/getLocation', validate(getLocationValidate), authorize(["user"]), getLocation);
 
 // Visit Doctor Details 
-router.post('/startVisit', upload.single('doctorImage'), authorize(["user"]), startVisit);
+router.post('/startVisit',upload.single('doctorImage'), authorize(["user"]), startVisit);
 
 // Start Discussion
 router.post('/startDiscussion', authorize(["user"]), startDiscussion);
@@ -34,11 +32,11 @@ router.post('/overDiscussion', validate(overVisitValidate), uploadAudio.single('
 // Over Visit
 router.post('/overVisit', uploadAudio.single('audio'), authorize(['user']), overVisit);
 
-// Audio upload
-router.post('/uploadDiscussionAudio', uploadAudio.single('audio'), authorize(["user"]), uploadDiscussionAudio);
-
 // clock Out
 router.post('/clock-out', authorize(["user"]), clockOut);
+
+// Audio upload
+router.post('/uploadDiscussionAudio', uploadAudio.single('audio'), authorize(["user"]), uploadDiscussionAudio);
 
 // Logout
 router.post('/logout', logout);

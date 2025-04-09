@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Map with Two Coordinates</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        #map {
+            height: 500px;
+            width: 100%;
+        }
+
+        #distance {
+            margin-top: 10px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2>Map with Coordinates from Route</h2>
+    <div id="map"></div>
+    <div id="distance"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        const coord1 = L.latLng(<%= coord1.lat %>, <%= coord1.lng %>);
+        const coord2 = L.latLng(<%= coord2.lat %>, <%= coord2.lng %>);
+
+        const map = L.map('map').setView([
+            (coord1.lat + coord2.lat) / 2,
+            (coord1.lng + coord2.lng) / 2
+        ], 5);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        L.marker(coord1).addTo(map).bindPopup("Location 1").openPopup();
+        L.marker(coord2).addTo(map).bindPopup("Location 2");
+
+        L.polyline([coord1, coord2], { color: 'blue' }).addTo(map);
+
+        // Calculate distance in meters
+        const distanceInMeters = coord1.distanceTo(coord2);
+        const distanceInKm = (distanceInMeters / 1000).toFixed(2);
+
+        // Show distance on page
+        document.getElementById('distance').innerText = `Distance between points: ${distanceInKm} km`;
+    </script>
+
+</body>
+
+</html>

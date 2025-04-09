@@ -7,12 +7,18 @@
     <title>Register Employee</title>
     <style>
         body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 20px;
             background-color: #f4f4f4;
             text-align: center;
+            height: 100vh;
+            /* <-- This is the key line */
         }
+
 
         .container {
             max-width: 400px;
@@ -45,47 +51,47 @@
     <div class="container">
         <h2>Register Employee</h2>
         <form id="registerForm">
-            <input type="text" name="name" placeholder="Name" >
-            <input type="text" name="mobile" placeholder="Mobile" >
-            <input type="email" name="email" placeholder="Email" >
-            <input type="text" name="username" placeholder="Username" >
-            <input type="password" name="password" placeholder="Password" >
+            <input type="text" name="name" placeholder="Name">
+            <input type="text" name="mobile" placeholder="Mobile">
+            <input type="email" name="email" placeholder="Email">
+            <input type="text" name="username" placeholder="Username">
+            <input type="password" name="password" placeholder="Password">
             <button type="submit">Register</button>
         </form>
     </div>
 </body>
 
-    <script>
-        document.getElementById("registerForm").addEventListener("submit", async function (event) {
-            event.preventDefault(); // Prevent default form submission
+<script>
+    document.getElementById("registerForm").addEventListener("submit", async function (event) {
+        event.preventDefault(); // Prevent default form submission
 
-            const formData = new FormData(this); // Get form data
-            const data = Object.fromEntries(formData.entries()); // Convert to JSON object
+        const formData = new FormData(this); // Get form data
+        const data = Object.fromEntries(formData.entries()); // Convert to JSON object
 
-            try {
-                const response = await fetch("/api/admin/register", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(data)
-                });
+        try {
+            const response = await fetch("/api/admin/register", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data)
+            });
 
-                const result = await response.json();
+            const result = await response.json();
 
-                console.log(result);
-                if (response.ok) {
-                    
-                    alert("Registration Successful: " + result.message);
-                    window.location.href = "/api/admin/home"; // Redirect to login page
-                } else {
-                    alert(result.data ||result.message);
-                }
-            } catch (error) {
-                console.log(error);
-                alert("Server Error: " + error.message);
+            console.log(result);
+            if (response.ok) {
+
+                alert("Registration Successful: " + result.message);
+                window.location.href = "/api/admin/home"; // Redirect to login page
+            } else {
+                alert(result.data || result.message);
             }
-        });
-    </script>
+        } catch (error) {
+            console.log(error);
+            alert("Server Error: " + error.message);
+        }
+    });
+</script>
 
 </html>

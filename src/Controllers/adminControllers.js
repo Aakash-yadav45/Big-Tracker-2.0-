@@ -2,12 +2,15 @@ const { generateToken } = require("../Middlewares/authenticate");
 const Employee = require("../Models/Employee");
 const EmployeeTracking = require("../Models/EmployeeTracking");
 const { comparePassword } = require("../Utils/passwordUils");
+const { encrypt } = require('../Utils/encript');
 
+
+// Add new Employee
 const addEmployee = async (req, res) => {
     try {
         const { name, mobile, email, username, password } = req.body;
 
-        const existsUser = await Employee.findOne({ email,username });
+        const existsUser = await Employee.findOne({ email:encrypt(email), username });
 
         if (existsUser) {
             return res.status(400).json({ message: "Email is already register. Please log in." })
@@ -30,6 +33,7 @@ const addEmployee = async (req, res) => {
     }
 }
 
+// Login
 const login = async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -56,6 +60,7 @@ const login = async (req, res) => {
     }
 }
 
+// Soft employee deletion
 const deleteEmployee = async (req, res) => {
     try {
         const empId = req.params.id;
@@ -77,6 +82,7 @@ const deleteEmployee = async (req, res) => {
     }
 };
 
+// Get all visits
 const getVisits = async (req, res) => {
     try {
         const { username } = req.query;
@@ -130,20 +136,20 @@ const searchEmployee = async (req, res) => {
     try {
         console.log("username:- ", req.body);
         const search = req.body;
-        
+
         const employee = await Employee.find({
-            $or:[
+            $or: [
                 { username: search.username },
                 { _id: search.id },
                 { name: search.name },
-                {mobile: search.mobile}
+                { mobile: search.mobile }
             ],
             isDisable: false, role: 'user'
-            });
+        });
 
         console.log(employee);
-        
-        res.status(200).json({ message: "success",employee });
+
+        res.status(200).json({ message: "success", employee });
 
     } catch (error) {
         console.log("Error in search Employee:- ", error.message);
@@ -155,11 +161,37 @@ const searchEmployee = async (req, res) => {
 const getDesabledEmployees = async (req, res) => {
     try {
         const disabledUsers = await Employee.find({ isDisable: true, role: "user" });
-        console.log(disabledUsers);
+
         res.status(200).render('Admin/disabledEmployee', { disabledUsers });
     } catch (error) {
         console.log("Error in getDesabledEmployees:- ", error.message);
         return res.status(500).json({ message: "Something went wrong. Please try again later." });
+    }
+}
+
+// Enable Employee
+const enableEmployee = async (req, res) => {
+    try {
+        const employeeId = req.params.id;
+
+        const employee = await Employee.findOne({ _id: employeeId });
+
+        if (!employee) {
+            return res.status(404).json({ message: "Employee not found" });
+        }
+
+        if (!employee.isDisable) {
+            return res.status(400).json({ message: "Employee is already enabled." });
+        }
+
+        employee.isDisable = false;
+
+        await employee.save();
+
+        res.status(200).json({ message: "Employee enabled successfully!" });
+    } catch (error) {
+        console.log("Error in Enable Employee:- ", error.message);
+        return res.status(200).json({ message: "Somthing went wrong. Please try again later." });
     }
 }
 
@@ -177,4 +209,39 @@ const logout = async (req, res) => {
     }
 };
 
-module.exports = { addEmployee, login, deleteEmployee, getVisits, getVisitDetails, searchEmployee, getDesabledEmployees, logout };
+// Map
+const showMap = async (req, res) => {
+    try {
+        const { visitId } = req.query;
+
+        // const trackers = await EmployeeTracking.find();
+
+        // const currectTracker = trackers.find(tracker => tracker.visits.find(v=>v._id.toString() === visitId));
+        // console.log(currectTracker);
+
+        const result = await EmployeeTracking.findOne(
+            { "visits._id": new Object(visitId) },
+            { "visits.$": 1 } // this returns only the matched visit
+        );
+
+        const currentVisit = result.visits[0];
+
+        // Start location
+        const s1 = currentVisit.startLocation.split(',')[0];
+        const s2 = currentVisit.startLocation.split(',')[1];
+
+        // End location
+        const e1 = currentVisit.endLocation.split(',')[0];
+        const e2 = currentVisit.endLocation.split(',')[1];
+
+
+        const coord1 = { lat: s1, lng: s2 };
+        const coord2 = { lat: e1, lng: e2 }; 
+
+        res.render('Admin/map', { coord1, coord2 });
+    } catch (error) {
+        console.log("Error in Show map:- ", error.message);
+        return res.status(500).json({ message: "Somthing went wrong. Please try again later." });
+    }
+}
+module.exports = { addEmployee, login, deleteEmployee, getVisits, getVisitDetails, searchEmployee, getDesabledEmployees, enableEmployee, showMap, logout };
