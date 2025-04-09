@@ -39,7 +39,7 @@ router.post('/clock-out', authorize(["user"]), clockOut);
 router.post('/uploadDiscussionAudio', uploadAudio.single('audio'), authorize(["user"]), uploadDiscussionAudio);
 
 // Logout
-router.post('/logout', logout);
+router.post('/logout', logout);  
 
 
 module.exports = router;
