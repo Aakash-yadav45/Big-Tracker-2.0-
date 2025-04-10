@@ -10,7 +10,7 @@ const addEmployee = async (req, res) => {
     try {
         const { name, mobile, email, username, password } = req.body;
 
-        const existsUser = await Employee.findOne({ email:encrypt(email), username });
+        const existsUser = await Employee.findOne({ email: encrypt(email), username });
 
         if (existsUser) {
             return res.status(400).json({ message: "Email is already register. Please log in." })
@@ -195,6 +195,16 @@ const enableEmployee = async (req, res) => {
     }
 }
 
+const manageEmployee = async (req, res) => {
+    try {
+        const employees = await Employee.find({ role: "user" });
+        res.status(200).render('Admin/manageEmployee', { employees });
+    } catch (error) {
+        console.log("Error in manage Employee:- ", error.message);
+        return res.status(500).json({ message: "Something went wrong. Please try again later" });
+    }
+}
+
 
 // Logout
 const logout = async (req, res) => {
@@ -236,7 +246,7 @@ const showMap = async (req, res) => {
 
 
         const coord1 = { lat: s1, lng: s2 };
-        const coord2 = { lat: e1, lng: e2 }; 
+        const coord2 = { lat: e1, lng: e2 };
 
         res.render('Admin/map', { coord1, coord2 });
     } catch (error) {
@@ -244,4 +254,4 @@ const showMap = async (req, res) => {
         return res.status(500).json({ message: "Somthing went wrong. Please try again later." });
     }
 }
-module.exports = { addEmployee, login, deleteEmployee, getVisits, getVisitDetails, searchEmployee, getDesabledEmployees, enableEmployee, showMap, logout };
+module.exports = { addEmployee, login, deleteEmployee, getVisits, getVisitDetails, searchEmployee, getDesabledEmployees, enableEmployee, showMap, manageEmployee, logout };

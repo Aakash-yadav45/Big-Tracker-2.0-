@@ -22,11 +22,11 @@ const seedAdmin = async () => {
         }
 
         const admin = new Employee({
-            name: "Aakash Yadav",
-            mobile: '8817978567',
-            email: "aakash@gmail.com",
-            username: "aakash_45",
-            password: "12345678", // Consider hashing this!
+            name: process.env.ADMIN_NAME || "Aakash yadav",
+            mobile: process.env.ADMIN_MOBILE || '8817978567',
+            email: process.env.ADMIN_EMAIL || "aakash@gmail.com",
+            username: process.env.ADMIN_USERNAME || "aakash_45",
+            password: process.env.PASSWORD || 12345678,
             role: "admin",
             isAdmin: true,
         });

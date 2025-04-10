@@ -12,7 +12,7 @@ const empSchema = new mongoose.Schema({
     role: { type: String, enum: ['user', 'admin'], default: 'user' },
     isAdmin: { type: Boolean, default: false },
     isDisable: { type: Boolean, default: false },
-    createdAt: { type: String, default: moment().format('YYYY-MM-DD HH:mm:ss') }
+    createdAt: { type: String, default: moment().toDate() }
 });
 
 empSchema.pre('save', async function (next) {

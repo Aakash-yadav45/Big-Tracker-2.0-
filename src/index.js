@@ -24,11 +24,11 @@ connectDB();
 
 app.use('/api', routes);
 
-app.use(errorHandler);
-
 app.use((req, res) => {
     res.status(404).render('404');
 });
+
+app.use(errorHandler);
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => {

@@ -3,7 +3,7 @@ const { authorize } = require('../Middlewares/authenticate');
 const Employee = require('../Models/Employee');
 
 // Controllers
-const { addEmployee, login, deleteEmployee, logout, getVisits, getVisitDetails, searchEmployee, getDesabledEmployees, enableEmployee, showMap } = require('../Controllers/adminControllers');
+const { addEmployee, login, deleteEmployee, logout, getVisits, getVisitDetails, searchEmployee, getDesabledEmployees, enableEmployee, showMap, manageEmployee } = require('../Controllers/adminControllers');
 
 // Validations
 const {employeeValidate} = require('../Validations/Admin/addEmployee');
@@ -31,12 +31,12 @@ router.get('/login', async (req, res) => {
 });
 
 // Route to Render the Register Page
-router.get('/register', authorize(["admin"]),(req, res) => {
+router.get('/addEmployee', authorize(["admin"]), (req, res) => {
     try {
         return res.render("Admin/register");
     } catch (error) {
-        console.log("Error in rendering register page:- ",error.message);        
-        return res.status(500).json({message: "Somthing went wrong. Please try again later"});
+        console.log("Error in rendering register page:- ", error.message);
+        return res.status(500).json({ message: "Somthing went wrong. Please try again later" });
     }
 })
 
@@ -63,7 +63,10 @@ router.get('/searchEmployee', authorize(['admin']), searchEmployee);
 router.get('/disabled-employees', authorize(['admin']), getDesabledEmployees);
 
 // Enable Employee
-router.post('/enableEmployee/:id', authorize(['admin']),enableEmployee);
+router.post('/enableEmployee/:id', authorize(['admin']), enableEmployee);
+
+// manageEmployee
+router.post('/manageEmployee', authorize(["admin"]), manageEmployee);
 
 // Show employee location on map
 router.get('/map',authorize(['admin']),showMap);

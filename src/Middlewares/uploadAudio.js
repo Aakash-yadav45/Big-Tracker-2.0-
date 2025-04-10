@@ -12,7 +12,7 @@ function randomString() {
 
 const storage = multer.diskStorage({
     destination: (req, file, next) => {
-        next(null, 'public/audio'); // Store in 'public/audio' folder
+        next(null, 'public/audio'); 
     },
     filename: (req, file, next) => {
         next(null, 'audio_' + randomString() + '_' + Date.now() + path.extname(file.originalname).toLowerCase());

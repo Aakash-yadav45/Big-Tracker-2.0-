@@ -1,3 +1,4 @@
+require('dotenv').config()
 const jwt = require('jsonwebtoken');
 const passport = require("passport");
 const { Strategy: JwtStrategy, ExtractJwt } = require("passport-jwt");
@@ -11,7 +12,7 @@ const generateToken = (user, res) => {
     const token = jwt.sign(
         { id: user._id, role: user.role },
         SECRET_KEY,
-        { expiresIn: "1d" } // Token expires in 1 day
+        { expiresIn: process.env.JWT_EXPIRES_IN } 
     );
 
     // Set the cookie
@@ -25,28 +26,28 @@ const generateToken = (user, res) => {
     return token;
 };
 
-// Passport JWT Strategy Options
-const options = {
-    jwtFromRequest: ExtractJwt.fromExtractors([
-        (req) => req?.cookies?.authToken // Extract JWT from cookies
-    ]),
-    secretOrKey: SECRET_KEY
-};
+    // Passport JWT Strategy Options
+    const options = {
+        jwtFromRequest: ExtractJwt.fromExtractors([
+            (req) => req?.cookies?.authToken // Extract JWT from cookies
+        ]),
+        secretOrKey: SECRET_KEY
+    };
 
-// Configure Passport JWT Strategy
-passport.use(
-    new JwtStrategy(options, async (jwt_payload, done) => {
-        try {
-            const user = await User.findById(jwt_payload.id);
-            if (user) {
-                return done(null, user);
+    // Configure Passport JWT Strategy
+    passport.use(
+        new JwtStrategy(options, async (jwt_payload, done) => {
+            try {
+                const user = await User.findById(jwt_payload.id);
+                if (user) {
+                    return done(null, user);
+                }
+                return done(null, false);
+            } catch (error) {
+                return done(error, false);
             }
-            return done(null, false);
-        } catch (error) {
-            return done(error, false);
-        }
-    })
-);
+        })
+    );
 
 // Authorization Middleware
 const authorize = (roles = []) => (req, res, next) => {
