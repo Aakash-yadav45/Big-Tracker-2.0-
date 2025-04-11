@@ -3,6 +3,7 @@ const Employee = require("../Models/Employee");
 const EmployeeTracking = require("../Models/EmployeeTracking");
 const { comparePassword } = require("../Utils/passwordUils");
 const { encrypt } = require('../Utils/encript');
+const mongoose = require('mongoose');
 
 
 // Add new Employee
@@ -134,23 +135,28 @@ const getVisitDetails = async (req, res) => {
 // Search Employee using username and employee name
 const searchEmployee = async (req, res) => {
     try {
-        console.log("username:- ", req.body);
-        const search = req.body;
+        const search = req.query;
+        const isObjectId = mongoose.Types.ObjectId.isValid(search.query);
 
-        const employee = await Employee.find({
-            $or: [
-                { username: search.username },
-                { _id: search.id },
-                { name: search.name },
-                { mobile: search.mobile }
-            ],
-            isDisable: false, role: 'user'
+        const conditions = [
+            { username: { $regex: search.query, $options: 'i' } },
+            { name: { $regex: search.query, $options: 'i' } },
+            { mobile: { $regex: search.query, $options: 'i' } }
+        ];
+
+        if (isObjectId) {
+            conditions.push({ _id: search.query });
+        }
+
+        const employees = await Employee.find({
+            $and: [
+                { $or: conditions },
+                { isDisable: false },
+                { role: 'user' }
+            ]
         });
 
-        console.log(employee);
-
-        res.status(200).json({ message: "success", employee });
-
+        res.status(200).json({ employees });
     } catch (error) {
         console.log("Error in search Employee:- ", error.message);
         return res.status(500).json({ message: "Somthing went wrong. Please try again later" });
@@ -219,6 +225,36 @@ const logout = async (req, res) => {
     }
 };
 
+// Search manage Employee using username, name, id and mobile number
+const manageEmployeeSearch = async (req, res) => {
+    try {
+        const search = req.query;
+        const isObjectId = mongoose.Types.ObjectId.isValid(search.query);
+
+        const conditions = [
+            { username: { $regex: search.query, $options: 'i' } },
+            { name: { $regex: search.query, $options: 'i' } },
+            { mobile: { $regex: search.query, $options: 'i' } }
+        ];
+
+        if (isObjectId) {
+            conditions.push({ _id: search.query });
+        }
+
+        const employees = await Employee.find({
+            $and: [
+                { $or: conditions },
+                { role: 'user' }
+            ]
+        });
+
+        res.status(200).json({ employees });
+    } catch (error) {
+        console.log("Error in search Employee:- ", error.message);
+        return res.status(500).json({ message: "Somthing went wrong. Please try again later" });
+    }
+}
+
 // Map
 const showMap = async (req, res) => {
     try {
@@ -254,4 +290,4 @@ const showMap = async (req, res) => {
         return res.status(500).json({ message: "Somthing went wrong. Please try again later." });
     }
 }
-module.exports = { addEmployee, login, deleteEmployee, getVisits, getVisitDetails, searchEmployee, getDesabledEmployees, enableEmployee, showMap, manageEmployee, logout };
+module.exports = { addEmployee, login, deleteEmployee, getVisits, getVisitDetails, searchEmployee, getDesabledEmployees, enableEmployee, showMap, manageEmployee, manageEmployeeSearch, logout };

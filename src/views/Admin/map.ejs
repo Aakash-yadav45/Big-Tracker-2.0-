@@ -21,7 +21,7 @@
 
 <body>
 
-    <h2>Map with Coordinates from Route</h2>
+    <h2>Map with Coordinates from API</h2>
     <div id="map"></div>
     <div id="distance"></div>
 
@@ -44,11 +44,9 @@
 
         L.polyline([coord1, coord2], { color: 'blue' }).addTo(map);
 
-        // Calculate distance in meters
         const distanceInMeters = coord1.distanceTo(coord2);
         const distanceInKm = (distanceInMeters / 1000).toFixed(2);
 
-        // Show distance on page
         document.getElementById('distance').innerText = `Distance between points: ${distanceInKm} km`;
     </script>
 

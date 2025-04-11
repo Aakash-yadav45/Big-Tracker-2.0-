@@ -3,7 +3,7 @@ const { authorize } = require('../Middlewares/authenticate');
 const Employee = require('../Models/Employee');
 
 // Controllers
-const { addEmployee, login, deleteEmployee, logout, getVisits, getVisitDetails, searchEmployee, getDesabledEmployees, enableEmployee, showMap, manageEmployee } = require('../Controllers/adminControllers');
+const { addEmployee, login, deleteEmployee, logout, getVisits, getVisitDetails, searchEmployee, getDesabledEmployees, enableEmployee, showMap, manageEmployee, manageEmployeeSearch } = require('../Controllers/adminControllers');
 
 // Validations
 const {employeeValidate} = require('../Validations/Admin/addEmployee');
@@ -66,7 +66,11 @@ router.get('/disabled-employees', authorize(['admin']), getDesabledEmployees);
 router.post('/enableEmployee/:id', authorize(['admin']), enableEmployee);
 
 // manageEmployee
-router.post('/manageEmployee', authorize(["admin"]), manageEmployee);
+router.get('/manageEmployee', authorize(["admin"]), manageEmployee);
+
+// manageEmployee search
+router.get('/manageEmployeeSearch', authorize(["admin"]), manageEmployeeSearch);
+
 
 // Show employee location on map
 router.get('/map',authorize(['admin']),showMap);

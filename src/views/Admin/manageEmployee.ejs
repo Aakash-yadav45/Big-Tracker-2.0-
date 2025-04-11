@@ -194,26 +194,53 @@
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-        function filterEmployees() {
+        async function filterEmployees() {
             const query = document.getElementById("searchEmployee").value.toLowerCase();
-            const rows = document.querySelectorAll("#employeeTable tbody tr");
 
-            rows.forEach(row => {
-                const name = row.getAttribute("data-name");
-                const username = row.getAttribute("data-username");
-                const mobile = row.getAttribute("data-mobile");
+            try {
+                const response = await fetch(`/api/Admin/manageEmployeeSearch?query=${encodeURIComponent(query)}`);
+                if (!response.ok) throw new Error('Failed to fetch');
 
-                if (
-                    name.includes(query) ||
-                    username.includes(query) ||
-                    mobile.includes(query)
-                ) {
-                    row.style.display = "";
-                } else {
-                    row.style.display = "none";
-                }
-            });
+                const data = await response.json();
+                const employees = data.employees;
+                if (!Array.isArray(employees)) throw new Error('Expected an array of employees');
+
+                const tbody = document.querySelector("#employeeTable tbody");
+                tbody.innerHTML = ""; // Clear old rows
+
+                employees.forEach((employee, index) => {
+                    const tr = document.createElement("tr");
+                    tr.setAttribute("data-name", employee.name.toLowerCase());
+                    tr.setAttribute("data-username", employee.username.toLowerCase());
+                    tr.setAttribute("data-mobile", employee.mobile);
+
+                    const statusClass = employee.isDisable ? "status-disabled" : "status-enabled";
+                    const statusText = employee.isDisable ? "Disabled" : "Enabled";
+
+                    tr.innerHTML = `
+                <td>${index + 1}</td>
+                <td>${employee.username}</td>
+                <td>${employee.name}</td>
+                <td>${employee.mobile}</td>
+                <td>
+                    <span class="status-badge ${statusClass}">
+                        ${statusText}
+                    </span>
+                </td>
+                <td class="actions">
+                    <button class="edit-btn" onclick="enableEmployee('${employee._id}')">Enable</button>
+                    <button class="delete-btn" onclick="deleteEmployee('${employee._id}')">Disable</button>
+                </td>
+            `;
+
+                    tbody.appendChild(tr);
+                });
+
+            } catch (err) {
+                console.error("Error:", err);
+            }
         }
+
 
         function enableEmployee(id) {
             $.ajax({
@@ -230,7 +257,7 @@
                     const message = xhr.responseJSON.data || xhr.responseJSON.message
                     // Check for specific status codes
                     if (xhr.status === 400) {
-                        alert(message||'Invalid employee ID or bad request.');
+                        alert(message || 'Invalid employee ID or bad request.');
                     } else if (xhr.status === 401) {
                         alert('Unauthorized: Please login first.');
                     } else if (xhr.status === 403) {

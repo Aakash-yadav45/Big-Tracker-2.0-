@@ -136,9 +136,13 @@
         }
 
         #rightBox {
-            /* display: flex; */
+            display: flex;
+            flex-wrap: wrap;
+            /* allows wrapping on smaller screens */
             justify-content: center;
-            align-items: center;
+            align-items: flex-start;
+            gap: 20px;
+
             width: 75%;
             background: white;
             padding: 20px;
@@ -361,7 +365,7 @@
                 <strong>Visit Name:</strong> <span id="visitName">Select a Visit</span>
             </div>
             <div class="btn-group">
-                <button class="add-btn"  onclick="manageEmployee()">Manage
+                <button class="add-btn" onclick="window.location.href='/api/admin/manageEmployee'">Manage
                     Employee</button>
                 <button class="logout-btn" onclick="logoutUser()">Logout</button>
             </div>
@@ -526,49 +530,44 @@
             }
         }
 
-        // Search Employee
-        function filterEmployees() {
+        //   <input type="text" id="searchEmployee" oninput="filterEmployees()" placeholder="Search..." />
+        // <ul id="employeeList"></ul>
+        async function filterEmployees() {
             const query = document.getElementById("searchEmployee").value.toLowerCase();
-            const listItems = document.querySelectorAll("#employeeList li");
 
-            listItems.forEach(item => {
-                const name = item.getAttribute("data-name");
-                const username = item.getAttribute("data-username");
-                const mobile = item.getAttribute("data-mobile");
+            try {
+                const response = await fetch(`/api/Admin/searchEmployee?query=${encodeURIComponent(query)}`);
+                if (!response.ok) throw new Error('Failed to fetch');
 
-                if (
-                    name.includes(query) ||
-                    username.includes(query) ||
-                    mobile.includes(query)
-                ) {
-                    item.style.display = "flex";
-                } else {
-                    item.style.display = "none";
-                }
-            });
-        }
+                const data = await response.json();
+                const employees = data.employees;
+                console.log('Employees:', employees);
+                if (!Array.isArray(employees)) throw new Error('Expected an array of employees');
 
-        function manageEmployee() {
-            $.ajax({
-                url: '/api/admin/manageEmployee', // your POST route
-                type: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({}), // You can include data here if needed
-                success: function (response) {
-                    console.log('Success:', response);
-                    // Hide entire body content
-                    $('body').children().not('#responseContainer').hide();
+                const list = document.getElementById("employeeList");
+                list.innerHTML = ""; // Clear current list
 
-                    // Show and inject response into the container
-                    $('#responseContainer').html(response).show();
-                },
-                error: function (xhr, status, error) {
-                    console.log(xhr);
+                employees.forEach(emp => {
+                    const li = document.createElement("li");
 
-                    console.error('Error:', error);
-                    alert('Failed to manage employee');
-                }
-            });
+                    li.setAttribute("data-name", emp.name.toLowerCase());
+                    li.setAttribute("data-username", emp.username.toLowerCase());
+                    li.setAttribute("data-mobile", emp.mobile);
+                    li.style.display = "flex";
+
+                    li.setAttribute("onclick", `selectEmployee('${emp.username}', '${emp.name}', '${emp.mobile}')`);
+
+                    li.innerHTML = `
+        <img src="/Employee.png" alt="User" />
+        <span>${emp.username}</span>
+      `;
+
+                    list.appendChild(li);
+                });
+
+            } catch (err) {
+                console.error('Error:', err);
+            }
         }
     </script>
 </body>
