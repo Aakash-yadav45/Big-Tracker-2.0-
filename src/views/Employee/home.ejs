@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <title>Big Tracker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        .header {
+            background-color: #004a99;
+            color: white;
+            padding: 10px;
+            font-size: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+        }
+
+        .header img {
+            height: 40px;
+            margin-right: 10px;
+        }
+
+        .header .button {
+            background: #fff;
+            color: #004a99;
+            border: 1px solid #004a99;
+            border-radius: 5px;
+            padding: 8px 15px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        .header .button:hover {
+            background-color: #004a99;
+            color: #fff;
+        }
+
+        .container {
+            margin-top: 20px;
+            padding: 0 10px;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .button {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            cursor: pointer;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 140px;
+            font-size: 16px;
+            border: none;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+
+        .button:hover {
+            background-color: #ddd;
+        }
+
+        .timer {
+            width: 200px;
+            height: 200px;
+            border: 10px solid #f08;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            margin: 20px auto;
+            cursor: pointer;
+        }
+
+        .start-visit-container {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .start-visit-button {
+            background: #004a99;
+            color: white;
+            border: 1px solid #004a99;
+            border-radius: 5px;
+            padding: 15px 25px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+            margin: 20px auto;
+            display: inline-block;
+        }
+
+        .start-visit-button:hover {
+            background-color: #003366;
+        }
+
+        @media (max-width: 600px) {
+            .header {
+                font-size: 18px;
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .button-container {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .button {
+                width: 100%;
+                max-width: 200px;
+            }
+
+            .start-visit-button {
+                width: 100%;
+                max-width: 250px;
+            }
+        }
+
+        .logo img {
+            border: 2px solid black;
+            border-radius: 50%;
+        }
+    </style>
+    <style>
+        .start-discussion-container {
+            display: inline;
+            justify-content: center;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .discussion-button {
+            background: #004a99;
+            color: white;
+            border: 1px solid #004a99;
+            border-radius: 5px;
+            padding: 15px 25px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+            margin: 10px auto;
+            display: inline-block;
+        }
+
+        .discussion-button:hover {
+            background-color: #003366;
+        }
+
+        @media (max-width: 600px) {
+            .discussion-button {
+                width: 100%;
+                max-width: 250px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <div class="logo" style="display: flex; align-items: center;">
+            <img src="/Big-Tracker.png" alt="Logo">
+            <div>Big Tracker</div>
+        </div>
+        <div>
+            <button id="syncBtn" class="button">Sync</button>
+            <button id="logoutBtn" class="button">Log Out</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="button-container">
+            <button class="button" id="clockInButton">clock-In</button>
+            <button class="button" id="clockOutButton">clock-Out</button>
+        </div>
+
+        <div id="timer" class="timer">
+            <span id="timerText">00:00:00</span>
+        </div>
+
+        <p>Version: 1.19</p>
+
+        <div class="start-visit-container">
+            <button class="start-visit-button" id="startVisitButton">Start Visit</button>
+        </div>
+        <div class="start-discussion-container">
+            <button class="discussion-button" id="startDiscussionButton" >Start Discussion</button>
+            <button class="discussion-button" id="overDiscussionButton">Over Discussion</button>
+        </div>
+    </div>
+</body>
+<div id="responseContainer"></div>
+<script>
+    // Start Discussion
+    $(document).ready(function () {
+        $('#startDiscussionButton').click(function () {
+            $.ajax({
+                url: "/api/employee/startDiscussion", // Update with your actual route
+                type: "GET", // Or "GET" if needed
+                data: {}, // Include any necessary data
+                success: function (response) {
+                    // alert("Discussion started successfully!");
+                    window.location.href = '/api/employee/startAudio';
+                },
+                error: function (xhr, status, error) {
+                    console.log(xhr);
+                    if (xhr.status === 400) {
+                        alert(xhr.responseJSON.data || xhr.responseJSON.message || "Invalid request");
+                        window.location.href = '/api/employee/startAudio';
+                    }
+                    console.error("Error starting discussion:", error);
+                    alert("Failed to start discussion. Please try again.");
+                }
+
+            });
+
+        });
+    });
+
+    let timerElement = document.getElementById("timerText");
+    let timerInterval;
+
+    // clock if the timer was running before (stored flag)
+    let timerRunning = localStorage.getItem("timerRunning") === "true";
+    let timeElapsed = localStorage.getItem("timeElapsed") ? parseInt(localStorage.getItem("timeElapsed")) : 0;
+
+    // Function to update timer display
+    function updateTimerDisplay() {
+        let hours = Math.floor(timeElapsed / 3600);
+        let minutes = Math.floor((timeElapsed % 3600) / 60);
+        let seconds = timeElapsed % 60;
+
+        let formattedTime =
+            String(hours).padStart(2, "0") + ":" +
+            String(minutes).padStart(2, "0") + ":" +
+            String(seconds).padStart(2, "0");
+
+        timerElement.textContent = formattedTime;
+    }
+
+    // Function to start the timer
+    function startTimer() {
+        if (timerInterval) return; // Prevent multiple intervals
+
+        timerRunning = true;
+        localStorage.setItem("timerRunning", "true");
+
+        updateTimerDisplay(); // Initial display
+
+        timerInterval = setInterval(function () {
+            timeElapsed++; // Increment time
+            localStorage.setItem("timeElapsed", timeElapsed); // Store updated time
+            updateTimerDisplay();
+        }, 1000);
+    }
+
+    // Function to stop and reset the timer
+    function stopTimer() {
+        clearInterval(timerInterval);
+        timerInterval = null;
+        timerRunning = false;
+        localStorage.removeItem("timerRunning");
+        localStorage.removeItem("timeElapsed");
+    }
+
+    // Function to reset the timer to 00:00:00
+    function resetTimer() {
+        stopTimer();
+        timeElapsed = 0; // Reset time
+        localStorage.setItem("timeElapsed", timeElapsed); // Store reset time
+        updateTimerDisplay();
+    }
+
+    // If the employee was clocked in before refresh, restart the timer
+    if (timerRunning) {
+        startTimer();
+    }
+
+    // clock-in AJX
+    $(document).ready(function () {
+        $("#clockInButton").click(function () {
+            $.ajax({
+                url: "/api/employee/clock-in", // Your clock-in route
+                type: "GET",
+                dataType: "html", // Expecting an HTML response
+                success: function (response, status, xhr) {
+                    console.log("HTML Response: ", response);
+                    console.log(xhr);
+                    // Get the response status code
+
+                    alert(JSON.parse(response).message || "Clock-in started successfully!");
+                    window.location.href = '/api/employee/getLocation';
+                },
+                error: function (xhr, status, error) {
+                    console.log("Error: ", xhr);
+                    const message = JSON.parse(xhr.responseText).data || JSON.parse(xhr.responseText).message;
+
+                    if (xhr.status === 400) {
+                        alert(message || "Invailid clock in");
+                    } else if (xhr.status === 401) {
+                        alert("You need to log in first.");
+                        window.location.href = "/api/admin/login";
+                    } else if (xhr.status === 500) {
+                        alert("Something went wrong. Please try again.");
+                    } else {
+                        alert("An unexpected error occurred.");
+                    }
+                }
+            });
+        });
+    });
+
+    // Start Visit
+    $(document).ready(function () {
+        $("#startVisitButton").click(function () {
+            $.ajax({
+                url: "/api/employee/startVisit",
+                type: "GET",
+                contentType: "application/json",
+                dataType: "html",
+                success: function (response, status, xhr) {
+
+                    if (xhr.status === 200) {
+                        $('.header').hide();
+                        $('.container').hide();
+
+                        $("#responseContainer").html(response).css({
+                            "display": "flex",
+                            "justify-content": "center",
+                            "align-items": "center",
+                            "position": "fixed", // Fixed for better positioning on all screens
+                            "top": "50%",
+                            "left": "50%",
+                            "transform": "translate(-50%, -50%)",
+                            "background": "white",
+                            "padding": "20px",
+                            "border-radius": "10px",
+                            "box-shadow": "0px 4px 15px rgba(0, 0, 0, 0.3)", // Stronger shadow for visibility
+                            "opacity": "10", // Ensuring full visibility
+                            "visibility": "visible",
+                            "max-width": "90%", // Responsive width
+                            "width": "400px", // Default width
+                            "text-align": "center"
+                        }).hide().fadeIn(500);
+                    } else {
+                        alert(response.message || "Something went wrong.");
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.log("Error: ", xhr);
+
+                    const message = JSON.parse(xhr.responseText).message;
+
+                    if (xhr.status === 400) {
+                        alert(message || "employee has already visit in this side!");
+                    } else if (xhr.status === 404) {
+                        alert("Employee has not clocked in!");
+                    } else if (xhr.status === 401) {
+                        alert("Session expired. Please log in again.");
+                        window.location.href = "/login";
+                    } else if (xhr.status === 500) {
+                        alert("Server error! Please try again.");
+                    } else {
+                        alert("An unexpected error occurred.");
+                    }
+                }
+            });
+        });
+    });
+
+
+
+    // clock-Out AJAX
+    $(document).ready(function () {
+        $("#clockOutButton").click(function () {
+            $.ajax({
+                url: "/api/employee/clock-out", // Your clockout route
+                type: "POST",
+                dataType: "json",
+                success: function (response, status, xhr) {
+                    console.log(response);
+
+                    // Get the response status code
+                    let statusCode = xhr.status;
+
+                    if (statusCode === 200) {
+                        stopTimer();
+                        resetTimer(); // Reset timer after clockout
+                        alert("clockout successful!");
+                        window.location.href = "/api/employee/home"; // Redirect to confirmation page
+                    } else {
+                        alert("clockout failed: " + response.message);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.log("Error: ", xhr);
+
+                    let statusCode = xhr.status;
+                    const message = xhr.responseJSON.message;
+                    if (statusCode === 400) {
+                        alert(message || "Invalid clockout request.");
+                    } else if (statusCode === 401) {
+                        alert("You need to log in first.");
+                        window.location.href = "/login";
+                    } else if (statusCode === 500) {
+                        alert("Something went wrong. Please try again.");
+                    } else {
+                        alert("An unexpected error occurred.");
+                    }
+                }
+            });
+        });
+    });
+
+
+    // Complete Logout
+    $(document).ready(function () {
+        $("#logoutBtn").click(function () {
+            $.ajax({
+                url: "/api/admin/logout", // Your logout route
+                type: "POST",
+                dataType: "json",
+                success: function (response, status, xhr) {
+                    console.log(response);
+
+                    // Get the status code from the response
+                    let statusCode = xhr.status;
+
+                    if (statusCode === 200) {
+                        alert("Logged out successfully!");
+                        window.location.href = "/api/admin/login"; // Redirect to login page
+                    } else if (statusCode === 401) {
+                        alert("Session expired! Redirecting to login.");
+                        window.location.href = "/api/admin/login";
+                    } else if (statusCode === 500) {
+                        alert("Server error. Please try again later.");
+                    } else {
+                        alert("Logout failed: " + response.message);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.log("Error: ", xhr);
+
+                    let statusCode = xhr.status;
+
+                    if (statusCode === 401) {
+                        alert("Unauthorized! Redirecting to login.");
+                        window.location.href = "/api/admin/login";
+                    } else if (statusCode === 500) {
+                        alert("Server error! Please try again.");
+                    } else {
+                        alert("An unexpected error occurred.");
+                    }
+                }
+            });
+        });
+    });
+
+</script>
+
+</html>

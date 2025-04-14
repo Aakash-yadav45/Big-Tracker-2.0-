@@ -151,17 +151,17 @@ const startDiscussion = async (req, res) => {
         const tracker = await EmployeeTracking.findOne({ employeeId: req.user._id, clockOutTime: null, clockInTime: { $gte: startDay, $lte: endDay } });
 
         if (!tracker) {
-            return res.status(400).json({ message: "You must clock in before starting a discussion." });
+            return res.status(404).json({ message: "You must clock in before starting a discussion." });
         }
 
         if (tracker.visits.length === 0) {
-            return res.status(400).json({ message: "You need to start a visit before start descussion." });
+            return res.status(404).json({ message: "You need to start a visit before start descussion." });
         }
 
         const activeVisit = tracker.visits.find(visit => visit.visitEndTime === null);
 
         if (!activeVisit) {
-            return res.status(400).json({ message: "No active visit found. Please start a visit first" });
+            return res.status(404).json({ message: "No active visit found. Please start a visit first" });
         }
 
         // Create a new Discussion
@@ -181,8 +181,7 @@ const startDiscussion = async (req, res) => {
         }
 
         await tracker.save();
-
-        res.status(200).json({ message: "Discussion started successfully." });
+        res.status(200).json({ message: "Discussion started successfully!" });
     } catch (error) {
         console.log("Erroor in startDiscussion:- ", error.message);
         return res.status(500).json({ message: "Somthing went wrong. Please try again later" });

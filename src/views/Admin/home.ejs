@@ -367,12 +367,12 @@
             <div class="btn-group">
                 <button class="add-btn" onclick="window.location.href='/api/admin/manageEmployee'">Manage
                     Employee</button>
-                <button class="logout-btn" onclick="logoutUser()">Logout</button>
+                    <button class="logout-btn" onclick="logoutUser()">Logout</button>
+                </div>
+                
             </div>
-
-        </div>
-
-        <div class="content">
+            
+            <div class="content">
             <div id="leftBox">
                 <p>No Data Found</p>
             </div>
@@ -382,6 +382,7 @@
         </div>
     </div>
     <div id="responseContainer" style="display: none;"></div>
+</body>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
     <script>
         async function selectEmployee(username, name, mobile) {
@@ -570,6 +571,5 @@
             }
         }
     </script>
-</body>
 
 </html>

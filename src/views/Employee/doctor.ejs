@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Details Form</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .form-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 10px;
+        }
+
+        input[type="text"],
+        input[type="file"] {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            margin-top: 15px;
+            width: 100%;
+            padding: 10px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #218838;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="form-container">
+        <h2>Doctor Details</h2>
+        <form id="form" method="post" enctype="multipart/form-data">
+            <label for="name">Doctor/Clinic Name:</label>
+            <input type="text" id="name" name="doctorName" required>
+
+            <label for="photo">Upload Photo:</label>
+            <input type="file" id="photo" name="doctorImage" required>
+
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+</body>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $("#form").submit(function (event) {
+            event.preventDefault(); // Prevent default form submission
+
+            let formData = new FormData(this); // Create FormData object
+
+            $.ajax({
+                url: "/api/employee/startVisit", // Replace with your actual backend API endpoint
+                type: "POST",
+                data: formData,
+                contentType: false,  // Prevent jQuery from setting contentType
+                processData: false,  // Prevent jQuery from processing data
+                success: function (response, status, xhr) {
+                    console.log(xhr);
+
+                    console.log("Response:", response);
+
+                    // Check status code and show separate alerts
+                    if (xhr.status === 200) {
+                        alert(response.message || "Doctor details submitted successfully!");
+                        window.location.href = "/api/employee/home";
+                    }
+                },
+                error: function (xhr) {
+                    console.log("Error:", xhr);
+
+                    // Check status code and show separate alerts
+                    if (xhr.status === 400) {
+                        alert(xhr.responseJSON?.message || "Bad request. Please check your input.");
+                    } else if (xhr.status === 401) {
+                        alert(xhr.responseJSON?.message || "Unauthorized. Please log in.");
+                        window.location.href = "/api/employee/login";
+                    } else if (xhr.status === 403) {
+                        alert(xhr.responseJSON?.message || "Forbidden. You do not have permission.");
+                    } else if (xhr.status === 404) {
+                        alert(xhr.responseJSON?.message || "API endpoint not found.");
+                    } else if (xhr.status === 500) {
+                        alert(xhr.responseJSON?.message || "Server error. Please try again later.");
+                    } else {
+                        alert(xhr.responseJSON?.message || "Error submitting doctor details.");
+                    }
+                }
+            });
+        });
+    });
+</script>
+
+
+
+</html>

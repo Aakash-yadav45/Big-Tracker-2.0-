@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Location Prompt</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+
+        button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 0 5px;
+        }
+
+        .ok-btn {
+            background: green;
+        }
+
+        .cancel-btn {
+            background: red;
+        }
+
+        @media (max-width: 480px) {
+            .modal {
+                width: 95%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="modal">
+        <h2>Where are you going?</h2>
+        <input type="text" id="location" placeholder="Enter location name">
+        <div class="buttons">
+            <button class="ok-btn">Ok</button>
+            <button class="cancel-btn">Cancel</button>
+        </div>
+    </div>
+</body>
+<script>
+    $(document).ready(function () {
+        $(".ok-btn").click(function () {
+            let location = $('#location').val();
+            if (!location) {
+                alert('Please enter a location.');
+                return;
+            }
+            console.log(location);
+            
+            $.ajax({
+                url: '/api/employee/getLocation',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ clockInPlace: location }),
+                success: function (response) {
+                    alert(response.message || 'Location submitted successfully!');
+                    window.location.href = '/api/employee/home';
+                },
+                error: function (xhr) {
+                    if (xhr.status === 400) {
+                        alert(xhr.responseJSON.message || 'Bad request. Please check your input.');
+                        window.location.href = '/api/employee/home';
+                    } else if (xhr.status === 401) {
+                        alert(xhr.responseJSON.message || 'Unauthorized. Please log in.');
+                        window.location.href = '/api/employee/login';
+                    } else if (xhr.status === 403) {
+                        alert(xhr.responseJSON.message || 'Forbidden. You do not have permission.');
+                    } else if (xhr.status === 404) {
+                        alert(xhr.responseJSON.message || 'API endpoint not found.');
+                    } else if (xhr.status === 500) {
+                        alert(xhr.responseJSON.message || 'Server error. Please try again later.');
+                    } else {
+                        alert(xhr.responseJSON.message || 'Error submitting location');
+                    }
+                }
+            });
+        });
+
+        $(".cancel-btn").click(function () {
+            window.location.href = '/api/employee/home';
+        });
+    });
+</script>
+
+
+
+</html>
