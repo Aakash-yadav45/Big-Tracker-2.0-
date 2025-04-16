@@ -1,36 +1,57 @@
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
 
-function randomString() {
-    const characters = 'abcdefghijklmnopqrstuvwxyz0123456789';
-    let str = "";
-    for (let i = 1; i <= 5; i++) {
-        str += characters.charAt(Math.floor(Math.random() * characters.length));
-    }
-    return str;
+// Ensure destination folder exists
+const AUDIO_DIR = path.join(__dirname, '..', 'public', 'audio');
+if (!fs.existsSync(AUDIO_DIR)) {
+    fs.mkdirSync(AUDIO_DIR, { recursive: true });
 }
 
+// Utility to generate a random string
+function randomString(length = 5) {
+    const characters = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    return Array.from({ length }, () =>
+        characters.charAt(Math.floor(Math.random() * characters.length))
+    ).join('');
+}
+
+// Multer storage config
 const storage = multer.diskStorage({
-    destination: (req, file, next) => {
-        next(null, 'public/audio'); 
+    destination: (req, file, cb) => {
+        cb(null, AUDIO_DIR);
     },
-    filename: (req, file, next) => {
-        next(null, 'audio_' + randomString() + '_' + Date.now() + path.extname(file.originalname).toLowerCase());
+    filename: (req, file, cb) => {
+        const ext = path.extname(file.originalname).toLowerCase();
+        const name = `audio_${randomString()}_${Date.now()}${ext}`;
+        cb(null, name);
     }
 });
 
-const fileFilter = (req, file, next) => {
-    const allowedMimeTypes = ['audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/mp3', 'audio/x-wav'];
+// Accepted audio MIME types
+const allowedMimeTypes = [
+    'audio/mpeg',
+    'audio/wav',
+    'audio/x-wav',
+    'audio/ogg',
+    'audio/webm',
+    'audio/mp3'
+];
+
+// File filter for audio validation
+const fileFilter = (req, file, cb) => {
     if (allowedMimeTypes.includes(file.mimetype)) {
-        next(null, true);
+        cb(null, true);
     } else {
-        next(new Error('Only audio files are allowed!'), false);
+        console.warn(`Rejected file with type: ${file.mimetype}`);
+        cb(new Error('Only supported audio formats are allowed!'), false);
     }
 };
 
+// Export multer config
 const uploadAudio = multer({
     storage,
-    limits: { fileSize: 104857600 }, // 100MB limit
+    limits: { fileSize: 100 * 1024 * 1024 }, // 100MB
     fileFilter
 });
 

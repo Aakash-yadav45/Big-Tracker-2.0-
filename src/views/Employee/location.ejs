@@ -119,6 +119,7 @@
                         alert(xhr.responseJSON.message || 'Forbidden. You do not have permission.');
                     } else if (xhr.status === 404) {
                         alert(xhr.responseJSON.message || 'API endpoint not found.');
+                        window.location.href='/api/employee/home'
                     } else if (xhr.status === 500) {
                         alert(xhr.responseJSON.message || 'Server error. Please try again later.');
                     } else {

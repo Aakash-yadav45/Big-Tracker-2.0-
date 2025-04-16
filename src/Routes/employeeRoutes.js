@@ -1,4 +1,5 @@
 const router = require('express').Router();
+const moment = require('moment');
 const { authorize } = require('../Middlewares/authenticate');
 const { validate } = require('express-validation');
 const { upload } = require('../Middlewares/uploadImage');
@@ -24,15 +25,24 @@ router.get('/home', authorize(["user"]), async (req, res) => {
 })
 
 // clock In
-router.get('/clock-in', authorize(["user"]), clockIn);
+router.post('/clock-in', authorize(["user"]), clockIn);
 
 
 router.get('/getLocation', authorize(["user"]), async (req, res) => {
     try {
-        const tracking = await EmployeeTracking.findOne({ employeeId: req.user._id, checkOutTime: null });
+        const employeeId = req.user._id;
 
-        if (!tracking) {
-            return res.status(400).json({ message: "User is alrady checked in." })
+        const startDay = moment().startOf('day').toDate();
+        const endDay = moment().endOf('day').toDate();
+
+        const tracker = await EmployeeTracking.findOne({ employeeId, clockOutTime: null, clockInTime: { $gte: startDay, $lte: endDay } });
+
+        if (!tracker) {
+            return res.status(404).json({ message: "You have not  clocked-in. Please clock-in before submitting your location." });
+        }
+
+        if (tracker.clockInPlace) {
+            return res.status(400).json({ message: "Your clock-in location is already recorded!" });
         }
 
         res.status(200).render('Employee/location');
@@ -44,7 +54,27 @@ router.get('/getLocation', authorize(["user"]), async (req, res) => {
 
 router.get('/startVisit', authorize(["user"]), async (req, res) => {
     try {
+        const startDay = moment().startOf('day').toDate();
+        const endDay = moment().endOf('day').toDate();
+
+        const tracker = await EmployeeTracking.findOne({ employeeId: req.user._id, clockOutTime: null, clockInTime: { $gte: startDay, $lte: endDay } });
+
+        if (!tracker) {
+            return res.status(404).json({ message: "You have not clocked in before starting a visit." });
+        }
+
+        if (!tracker.clockInPlace) {
+            return res.status(404).json({ message: "Clock-in location not found. Please submit your location before starting visit." });
+        }
+
+        if (tracker.visits.length !== 0) {
+            const currentVisit = tracker.visits.find(visit => visit.visitEndTime === null);
+            if (currentVisit) {
+                return res.status(400).json({ message: "You already have an ongoing visit. Please end it before starting a new visit." })
+            }
+        }
         res.status(200).render("Employee/doctor");
+
     } catch (error) {
         console.log("Error in start Visit:- ", error.message);
         return res.status(500).json({ message: "Something went wrong. Please try again later." });
@@ -82,7 +112,7 @@ router.post('/startVisit', upload.single('doctorImage'), authorize(["user"]), st
 router.post('/startDiscussion', authorize(["user"]), startDiscussion);
 
 // Over Discussion
-router.post('/overDiscussion', validate(overVisitValidate), uploadAudio.single('audio'), authorize(["user"]), overDiscussion);
+router.post('/overDiscussion', uploadAudio.single('audio'), authorize(["user"]), overDiscussion);
 
 // Over Visit
 router.post('/overVisit', uploadAudio.single('audio'), authorize(['user']), overVisit);

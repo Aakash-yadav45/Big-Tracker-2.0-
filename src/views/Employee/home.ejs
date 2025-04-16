@@ -95,7 +95,8 @@
             text-align: center;
         }
 
-        .start-visit-button {
+        .start-visit-button,
+        .end-visit-button {
             background: #004a99;
             color: white;
             border: 1px solid #004a99;
@@ -106,7 +107,7 @@
             font-weight: bold;
             transition: background-color 0.3s;
             margin: 20px auto;
-            display: inline-block;
+            display: block;
         }
 
         .start-visit-button:hover {
@@ -131,6 +132,11 @@
             }
 
             .start-visit-button {
+                width: 100%;
+                max-width: 250px;
+            }
+
+            .end-visit-button {
                 width: 100%;
                 max-width: 250px;
             }
@@ -195,7 +201,7 @@
         </div>
 
         <div id="timer" class="timer">
-            <span id="timerText">00:00:00</span>
+            <span id="timerText">Tap To Start</span>
         </div>
 
         <p>Version: 1.19</p>
@@ -204,104 +210,19 @@
             <button class="start-visit-button" id="startVisitButton">Start Visit</button>
         </div>
         <div class="start-discussion-container">
-            <button class="discussion-button" id="startDiscussionButton" >Start Discussion</button>
-            <button class="discussion-button" id="overDiscussionButton">Over Discussion</button>
+            <button class="discussion-button" id="startDiscussionButton">Start Discussion</button>
+            <button class="end-visit-button" id="endVisitButton">Over Visit</button>
         </div>
     </div>
 </body>
 <div id="responseContainer"></div>
 <script>
-    // Start Discussion
-    $(document).ready(function () {
-        $('#startDiscussionButton').click(function () {
-            $.ajax({
-                url: "/api/employee/startDiscussion", // Update with your actual route
-                type: "GET", // Or "GET" if needed
-                data: {}, // Include any necessary data
-                success: function (response) {
-                    // alert("Discussion started successfully!");
-                    window.location.href = '/api/employee/startAudio';
-                },
-                error: function (xhr, status, error) {
-                    console.log(xhr);
-                    if (xhr.status === 400) {
-                        alert(xhr.responseJSON.data || xhr.responseJSON.message || "Invalid request");
-                        window.location.href = '/api/employee/startAudio';
-                    }
-                    console.error("Error starting discussion:", error);
-                    alert("Failed to start discussion. Please try again.");
-                }
-
-            });
-
-        });
-    });
-
-    let timerElement = document.getElementById("timerText");
-    let timerInterval;
-
-    // clock if the timer was running before (stored flag)
-    let timerRunning = localStorage.getItem("timerRunning") === "true";
-    let timeElapsed = localStorage.getItem("timeElapsed") ? parseInt(localStorage.getItem("timeElapsed")) : 0;
-
-    // Function to update timer display
-    function updateTimerDisplay() {
-        let hours = Math.floor(timeElapsed / 3600);
-        let minutes = Math.floor((timeElapsed % 3600) / 60);
-        let seconds = timeElapsed % 60;
-
-        let formattedTime =
-            String(hours).padStart(2, "0") + ":" +
-            String(minutes).padStart(2, "0") + ":" +
-            String(seconds).padStart(2, "0");
-
-        timerElement.textContent = formattedTime;
-    }
-
-    // Function to start the timer
-    function startTimer() {
-        if (timerInterval) return; // Prevent multiple intervals
-
-        timerRunning = true;
-        localStorage.setItem("timerRunning", "true");
-
-        updateTimerDisplay(); // Initial display
-
-        timerInterval = setInterval(function () {
-            timeElapsed++; // Increment time
-            localStorage.setItem("timeElapsed", timeElapsed); // Store updated time
-            updateTimerDisplay();
-        }, 1000);
-    }
-
-    // Function to stop and reset the timer
-    function stopTimer() {
-        clearInterval(timerInterval);
-        timerInterval = null;
-        timerRunning = false;
-        localStorage.removeItem("timerRunning");
-        localStorage.removeItem("timeElapsed");
-    }
-
-    // Function to reset the timer to 00:00:00
-    function resetTimer() {
-        stopTimer();
-        timeElapsed = 0; // Reset time
-        localStorage.setItem("timeElapsed", timeElapsed); // Store reset time
-        updateTimerDisplay();
-    }
-
-    // If the employee was clocked in before refresh, restart the timer
-    if (timerRunning) {
-        startTimer();
-    }
-
     // clock-in AJX
     $(document).ready(function () {
         $("#clockInButton").click(function () {
             $.ajax({
                 url: "/api/employee/clock-in", // Your clock-in route
-                type: "GET",
+                type: "POST",
                 dataType: "html", // Expecting an HTML response
                 success: function (response, status, xhr) {
                     console.log("HTML Response: ", response);
@@ -309,7 +230,6 @@
                     // Get the response status code
 
                     alert(JSON.parse(response).message || "Clock-in started successfully!");
-                    window.location.href = '/api/employee/getLocation';
                 },
                 error: function (xhr, status, error) {
                     console.log("Error: ", xhr);
@@ -329,6 +249,129 @@
             });
         });
     });
+
+    // Start timer and set Location
+    let timerElement = document.getElementById("timerText");
+    let timerInterval;
+    let timerRunning = localStorage.getItem("timerRunning") === "true";
+    let timeElapsed = localStorage.getItem("timeElapsed") ? parseInt(localStorage.getItem("timeElapsed")) : 0;
+
+    function updateTimerDisplay() {
+        let hours = Math.floor(timeElapsed / 3600);
+        let minutes = Math.floor((timeElapsed % 3600) / 60);
+        let seconds = timeElapsed % 60;
+
+        let formattedTime =
+            String(hours).padStart(2, "0") + ":" +
+            String(minutes).padStart(2, "0") + ":" +
+            String(seconds).padStart(2, "0");
+
+        timerElement.textContent = formattedTime;
+    }
+
+    function startTimer() {
+        if (timerInterval) return;
+
+
+
+        timerRunning = true;
+        localStorage.setItem("timerRunning", "true");
+
+        updateTimerDisplay();
+
+        timerInterval = setInterval(function () {
+            timeElapsed++;
+            localStorage.setItem("timeElapsed", timeElapsed);
+            updateTimerDisplay();
+        }, 1000);
+    }
+
+    function stopTimer() {
+        clearInterval(timerInterval);
+        timerInterval = null;
+        timerRunning = false;
+        localStorage.removeItem("timerRunning");
+        localStorage.removeItem("timeElapsed");
+    }
+
+    function resetTimer() {
+        stopTimer();
+        timeElapsed = 0;
+        localStorage.setItem("timeElapsed", timeElapsed);
+        updateTimerDisplay();
+    }
+
+    // If the timer was already running, resume it on load
+    if (timerRunning) {
+        startTimer();
+    } else {
+        updateTimerDisplay(); // Just display 00:00:00 initially
+    }
+
+    // Bind click to timer to start it
+    document.getElementById("timer").addEventListener("click", function () {
+        if (!timerRunning) {
+            startTimer();
+            // Call get location API
+            $.ajax({
+                url: "/api/employee/getLocation",
+                type: "GET",
+                contentType: "application/json",
+                dataType: "html",
+                success: function (response, status, xhr) {
+                    if (xhr.status === 200) {
+                        $('.header').hide();
+                        $('.container').hide();
+
+                        $("#responseContainer").html(response).css({
+                            "display": "flex",
+                            "justify-content": "center",
+                            "align-items": "center",
+                            "position": "fixed",
+                            "top": "50%",
+                            "left": "50%",
+                            "transform": "translate(-50%, -50%)",
+                            "background": "white",
+                            "padding": "20px",
+                            "border-radius": "10px",
+                            "box-shadow": "0px 4px 15px rgba(0, 0, 0, 0.3)",
+                            "opacity": "1",
+                            "visibility": "visible",
+                            "max-width": "90%",
+                            "width": "400px",
+                            "text-align": "center"
+                        }).hide().fadeIn(500);
+                    } else {
+                        alert(response.message || "Something went wrong.");
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.log("Error: ", xhr);
+                    let message;
+
+                    try {
+                        message = JSON.parse(xhr.responseText).message;
+                    } catch (e) {
+                        message = "Unexpected error occurred.";
+                    }
+
+                    if (xhr.status === 400) {
+                        alert(message || "Bad request!");
+                    } else if (xhr.status === 404) {
+                        alert("Location service not found!");
+                    } else if (xhr.status === 401) {
+                        alert("Session expired. Please log in again.");
+                        window.location.href = "/login";
+                    } else if (xhr.status === 500) {
+                        alert("Server error! Please try again.");
+                    } else {
+                        alert("An unexpected error occurred.");
+                    }
+                }
+            });
+        }
+    });
+
 
     // Start Visit
     $(document).ready(function () {
@@ -388,6 +431,32 @@
         });
     });
 
+    // Start Discussion
+    $(document).ready(function () {
+        $('#startDiscussionButton').click(function () {
+            $.ajax({
+                url: "/api/employee/startDiscussion", // Update with your actual route
+                type: "GET", // Or "GET" if needed
+                data: {}, // Include any necessary data
+                success: function (response) {
+                    // alert("Discussion started successfully!");
+                    window.location.href = '/api/employee/startAudio';
+                },
+                error: function (xhr, status, error) {
+                    console.log(xhr.responseJSON.message);
+                    if (xhr.status === 404) {
+                        alert(xhr.responseJSON.message || xhr.responseJSON.data || "Invalid request");
+                    } else {
+                        console.error("Error starting discussion:", error);
+                        alert("Failed to start discussion. Please try again.");
+                    }
+                }
+
+            });
+
+        });
+    });
+
 
 
     // clock-Out AJAX
@@ -404,7 +473,6 @@
                     let statusCode = xhr.status;
 
                     if (statusCode === 200) {
-                        stopTimer();
                         resetTimer(); // Reset timer after clockout
                         alert("clockout successful!");
                         window.location.href = "/api/employee/home"; // Redirect to confirmation page

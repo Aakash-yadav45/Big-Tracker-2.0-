@@ -20,7 +20,7 @@ const login = async (req, res) => {
         const isMatch = await comparePassword(password, user.password);
 
         if (!isMatch) {
-            return res.status(404).json({ message: "Invailid password. Enter valid username." });
+            return res.status(404).json({ message: "Invailid password. Enter valid password." });
         }
 
         generateToken(user, res);
@@ -155,7 +155,7 @@ const startDiscussion = async (req, res) => {
         }
 
         if (tracker.visits.length === 0) {
-            return res.status(404).json({ message: "You need to start a visit before start descussion." });
+            return res.status(404).json({ message: "You need to start a visit before start discussion." });
         }
 
         const activeVisit = tracker.visits.find(visit => visit.visitEndTime === null);
